@@ -9,10 +9,10 @@ export declare class TablesService {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         }[];
     } & {
@@ -40,21 +40,21 @@ export declare class TablesService {
             } & {
                 id: string;
                 createdAt: Date;
-                menuItemId: string;
-                quantity: number;
                 notes: string | null;
-                orderId: string;
+                quantity: number;
                 unitPrice: number;
+                orderId: string;
+                menuItemId: string;
             })[];
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         })[];
     } & {

@@ -10,9 +10,9 @@ export declare class OrdersController {
                 createdAt: Date;
                 updatedAt: Date;
                 status: import("@prisma/client").$Enums.PaymentStatus;
+                orderId: string;
                 amount: number;
                 method: import("@prisma/client").$Enums.PaymentMethod;
-                orderId: string;
             } | null;
             items: ({
                 menuItem: {
@@ -29,11 +29,11 @@ export declare class OrdersController {
             } & {
                 id: string;
                 createdAt: Date;
-                menuItemId: string;
-                quantity: number;
                 notes: string | null;
-                orderId: string;
+                quantity: number;
                 unitPrice: number;
+                orderId: string;
+                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -54,10 +54,10 @@ export declare class OrdersController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         })[];
         meta: {
@@ -73,9 +73,9 @@ export declare class OrdersController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.PaymentStatus;
+            orderId: string;
             amount: number;
             method: import("@prisma/client").$Enums.PaymentMethod;
-            orderId: string;
         } | null;
         items: ({
             menuItem: {
@@ -92,11 +92,11 @@ export declare class OrdersController {
         } & {
             id: string;
             createdAt: Date;
-            menuItemId: string;
-            quantity: number;
             notes: string | null;
-            orderId: string;
+            quantity: number;
             unitPrice: number;
+            orderId: string;
+            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -117,10 +117,10 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.OrderStatus;
-        notes: string | null;
-        tableId: string;
         orderNumber: number;
+        notes: string | null;
         totalAmount: number;
+        tableId: string;
         staffId: string;
     }>;
     create(dto: CreateOrderDto, staffId: string): Promise<{
@@ -129,9 +129,9 @@ export declare class OrdersController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.PaymentStatus;
+            orderId: string;
             amount: number;
             method: import("@prisma/client").$Enums.PaymentMethod;
-            orderId: string;
         } | null;
         items: ({
             menuItem: {
@@ -148,11 +148,11 @@ export declare class OrdersController {
         } & {
             id: string;
             createdAt: Date;
-            menuItemId: string;
-            quantity: number;
             notes: string | null;
-            orderId: string;
+            quantity: number;
             unitPrice: number;
+            orderId: string;
+            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -173,10 +173,10 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.OrderStatus;
-        notes: string | null;
-        tableId: string;
         orderNumber: number;
+        notes: string | null;
         totalAmount: number;
+        tableId: string;
         staffId: string;
     }>;
     updateStatus(id: string, dto: UpdateOrderStatusDto): Promise<{
@@ -185,9 +185,9 @@ export declare class OrdersController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.PaymentStatus;
+            orderId: string;
             amount: number;
             method: import("@prisma/client").$Enums.PaymentMethod;
-            orderId: string;
         } | null;
         items: ({
             menuItem: {
@@ -204,11 +204,11 @@ export declare class OrdersController {
         } & {
             id: string;
             createdAt: Date;
-            menuItemId: string;
-            quantity: number;
             notes: string | null;
-            orderId: string;
+            quantity: number;
             unitPrice: number;
+            orderId: string;
+            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -229,10 +229,10 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.OrderStatus;
-        notes: string | null;
-        tableId: string;
         orderNumber: number;
+        notes: string | null;
         totalAmount: number;
+        tableId: string;
         staffId: string;
     }>;
     remove(id: string): Promise<{
@@ -240,10 +240,10 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.OrderStatus;
-        notes: string | null;
-        tableId: string;
         orderNumber: number;
+        notes: string | null;
         totalAmount: number;
+        tableId: string;
         staffId: string;
     }>;
 }
