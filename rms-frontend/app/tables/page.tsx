@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, QrCode } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { TableStatusBadge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { QRCodeModal } from '@/components/tables/QRCodeModal';
 import { useTables, useCreateTable, useUpdateTableStatus, useDeleteTable } from '@/hooks/useTables';
 import { useCurrentUser } from '@/hooks/useAuth';
 import { can } from '@/lib/permissions';
@@ -34,6 +35,7 @@ export default function TablesPage() {
   const [capacity, setCapacity] = useState('');
   const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
   const [newStatus, setNewStatus] = useState<TableStatus>('AVAILABLE');
+  const [qrTable, setQrTable] = useState<RestaurantTable | null>(null);
 
   const { data: tables = [], isLoading } = useTables();
   const createTable = useCreateTable();
@@ -112,6 +114,14 @@ export default function TablesPage() {
                     <span>{table.capacity} seats</span>
                   </div>
                   <TableStatusBadge status={table.status} />
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setQrTable(table); }}
+                    className="mt-3 flex items-center justify-center gap-1 w-full text-xs text-[#8D6E63] hover:text-[#FF8A65] transition-colors"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    Show QR
+                  </button>
                 </div>
               </Card>
             ))}
@@ -189,6 +199,8 @@ export default function TablesPage() {
           </div>
         </div>
       </Modal>
+      {/* QR Code Modal */}
+      <QRCodeModal table={qrTable} onClose={() => setQrTable(null)} />
     </AppLayout>
   );
 }
