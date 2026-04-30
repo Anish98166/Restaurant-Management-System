@@ -1,0 +1,109 @@
+export type Role = 'ADMIN' | 'STAFF';
+export type OrderStatus = 'PENDING' | 'PREPARING' | 'SERVED' | 'COMPLETED' | 'CANCELLED';
+export type TableStatus = 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' | 'CLEANING';
+export type PaymentStatus = 'PENDING' | 'PAID' | 'REFUNDED';
+export type PaymentMethod = 'CASH' | 'CARD' | 'ONLINE';
+export type MenuCategory = 'APPETIZER' | 'MAIN_COURSE' | 'DESSERT' | 'BEVERAGE' | 'SPECIAL';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category: MenuCategory;
+  available: boolean;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RestaurantTable {
+  id: string;
+  tableNumber: number;
+  capacity: number;
+  status: TableStatus;
+  orders?: Order[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrderItem {
+  id: string;
+  quantity: number;
+  unitPrice: number;
+  notes?: string;
+  menuItemId: string;
+  menuItem: MenuItem;
+  orderId: string;
+}
+
+export interface Payment {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  status: PaymentStatus;
+  orderId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: number;
+  status: OrderStatus;
+  notes?: string;
+  totalAmount: number;
+  tableId: string;
+  table: RestaurantTable;
+  staffId: string;
+  staff: Pick<User, 'id' | 'name' | 'email' | 'role'>;
+  items: OrderItem[];
+  payment?: Payment;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface DashboardAnalytics {
+  summary: {
+    totalOrders: number;
+    todayOrders: number;
+    activeOrders: number;
+    totalRevenue: number;
+    todayRevenue: number;
+    totalTables: number;
+    occupiedTables: number;
+    unpaidOrders: number;
+  };
+  recentOrders: Order[];
+  topMenuItems: Array<{
+    menuItemId: string;
+    _sum: { quantity: number };
+    menuItem: MenuItem;
+  }>;
+  ordersByStatus: Array<{ status: OrderStatus; _count: { status: number } }>;
+  weeklyRevenue: Array<{ date: string; revenue: number }>;
+}
+
+export interface AuthResponse {
+  user: User;
+  token: string;
+}

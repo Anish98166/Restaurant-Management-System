@@ -1,0 +1,107 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OrderQueryDto = exports.UpdateOrderStatusDto = exports.CreateOrderDto = exports.OrderItemDto = void 0;
+const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
+const swagger_1 = require("@nestjs/swagger");
+const client_1 = require("@prisma/client");
+class OrderItemDto {
+    menuItemId;
+    quantity;
+    notes;
+}
+exports.OrderItemDto = OrderItemDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "menuItemId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 2 }),
+    (0, class_validator_1.IsNumber)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], OrderItemDto.prototype, "quantity", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderItemDto.prototype, "notes", void 0);
+class CreateOrderDto {
+    tableId;
+    notes;
+    items;
+}
+exports.CreateOrderDto = CreateOrderDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateOrderDto.prototype, "tableId", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateOrderDto.prototype, "notes", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [OrderItemDto] }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => OrderItemDto),
+    __metadata("design:type", Array)
+], CreateOrderDto.prototype, "items", void 0);
+class UpdateOrderStatusDto {
+    status;
+}
+exports.UpdateOrderStatusDto = UpdateOrderStatusDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: client_1.OrderStatus }),
+    (0, class_validator_1.IsEnum)(client_1.OrderStatus),
+    __metadata("design:type", String)
+], UpdateOrderStatusDto.prototype, "status", void 0);
+class OrderQueryDto {
+    status;
+    tableId;
+    page;
+    limit;
+    startDate;
+    endDate;
+}
+exports.OrderQueryDto = OrderQueryDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(client_1.OrderStatus),
+    __metadata("design:type", String)
+], OrderQueryDto.prototype, "status", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderQueryDto.prototype, "tableId", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderQueryDto.prototype, "page", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], OrderQueryDto.prototype, "limit", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderQueryDto.prototype, "startDate", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], OrderQueryDto.prototype, "endDate", void 0);
+//# sourceMappingURL=order.dto.js.map

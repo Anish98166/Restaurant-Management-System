@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+:root {
+  --warm-beige: #F5E6D3;
+  --deep-brown: #4E342E;
+  --soft-orange: #FF8A65;
+  --cream: #FFF8F0;
+  --light-brown: #8D6E63;
+  --dark-brown: #3E2723;
+  --amber: #FFB74D;
+  --success: #66BB6A;
+  --warning: #FFA726;
+  --error: #EF5350;
+  --info: #42A5F5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--cream);
+  color: var(--deep-brown);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--warm-beige); }
+::-webkit-scrollbar-thumb { background: var(--light-brown); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--deep-brown); }
+
+/* Skeleton animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e8d5c4 25%, #f5e6d3 50%, #e8d5c4 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* Status badges */
+.badge-pending { background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; }
+.badge-preparing { background: #E3F2FD; color: #1565C0; border: 1px solid #42A5F5; }
+.badge-served { background: #F3E5F5; color: #6A1B9A; border: 1px solid #AB47BC; }
+.badge-completed { background: #E8F5E9; color: #2E7D32; border: 1px solid #66BB6A; }
+.badge-cancelled { background: #FFEBEE; color: #C62828; border: 1px solid #EF5350; }
+
+.badge-available { background: #E8F5E9; color: #2E7D32; border: 1px solid #66BB6A; }
+.badge-occupied { background: #FFEBEE; color: #C62828; border: 1px solid #EF5350; }
+.badge-reserved { background: #FFF3E0; color: #E65100; border: 1px solid #FFB74D; }
+.badge-cleaning { background: #E3F2FD; color: #1565C0; border: 1px solid #42A5F5; }
+
+/* Card hover */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(78, 52, 46, 0.15);
+}
