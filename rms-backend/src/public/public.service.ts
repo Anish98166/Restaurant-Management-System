@@ -2,10 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { PublicCreateOrderDto } from './dto/public-order.dto';
 import { TableStatus, MenuCategory } from '@prisma/client';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Injectable()
 export class PublicService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private inventoryService: InventoryService,
+  ) {}
 
   async getMenu(category?: string) {
     const where: any = { available: true };
@@ -103,6 +107,11 @@ export class PublicService {
       where: { id: dto.tableId },
       data: { status: TableStatus.OCCUPIED },
     });
+
+    // Deduct inventory stock for ordered items
+    await this.inventoryService.deductStock(
+      dto.items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
+    );
 
     return order;
   }

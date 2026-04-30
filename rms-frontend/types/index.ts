@@ -22,6 +22,18 @@ export interface MenuItem {
   category: MenuCategory;
   available: boolean;
   imageUrl?: string;
+  inventoryItem?: InventoryItem | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventoryItem {
+  id: string;
+  menuItemId: string;
+  quantity: number;
+  unit: string;
+  lowStockThreshold: number;
+  lastRestockedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

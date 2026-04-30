@@ -22,6 +22,7 @@ export class MenuService {
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
+        include: { inventoryItem: true },
       }),
       this.prisma.menuItem.count({ where }),
     ]);
@@ -33,7 +34,10 @@ export class MenuService {
   }
 
   async findOne(id: string) {
-    const item = await this.prisma.menuItem.findUnique({ where: { id } });
+    const item = await this.prisma.menuItem.findUnique({
+      where: { id },
+      include: { inventoryItem: true },
+    });
     if (!item) throw new NotFoundException(`Menu item ${id} not found`);
     return item;
   }

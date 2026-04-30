@@ -5,7 +5,7 @@ import {
   flexRender, ColumnDef, SortingState,
 } from '@tanstack/react-table';
 import { useState, useMemo } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Edit, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Edit, Trash2, ToggleLeft, ToggleRight, Package } from 'lucide-react';
 import { MenuItem } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -75,6 +75,31 @@ export function MenuTable({ items, onEdit, isAdmin }: MenuTableProps) {
             )}
           </button>
         ),
+      },
+      {
+        id: 'stock',
+        header: 'Stock',
+        cell: ({ row }) => {
+          const inv = row.original.inventoryItem;
+          if (!inv) return <span className="text-xs text-[#BCAAA4]">Not tracked</span>;
+          if (inv.quantity === 0)
+            return (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-red-500">
+                <Package className="w-3.5 h-3.5" /> Out of stock
+              </span>
+            );
+          if (inv.quantity <= inv.lowStockThreshold)
+            return (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-500">
+                <Package className="w-3.5 h-3.5" /> {inv.quantity} {inv.unit} (low)
+              </span>
+            );
+          return (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
+              <Package className="w-3.5 h-3.5" /> {inv.quantity} {inv.unit}
+            </span>
+          );
+        },
       },
       ...(isAdmin
         ? [
