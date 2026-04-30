@@ -22,10 +22,10 @@ export declare class PaymentsService {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         };
     } & {
@@ -33,9 +33,9 @@ export declare class PaymentsService {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        orderId: string;
         amount: number;
         method: import("@prisma/client").$Enums.PaymentMethod;
-        orderId: string;
     })[]>;
     findOne(id: string): Promise<{
         order: {
@@ -54,11 +54,11 @@ export declare class PaymentsService {
             } & {
                 id: string;
                 createdAt: Date;
-                menuItemId: string;
-                quantity: number;
                 notes: string | null;
-                orderId: string;
+                quantity: number;
                 unitPrice: number;
+                orderId: string;
+                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -73,10 +73,10 @@ export declare class PaymentsService {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         };
     } & {
@@ -84,9 +84,9 @@ export declare class PaymentsService {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        orderId: string;
         amount: number;
         method: import("@prisma/client").$Enums.PaymentMethod;
-        orderId: string;
     }>;
     create(dto: CreatePaymentDto): Promise<{
         order: {
@@ -94,10 +94,10 @@ export declare class PaymentsService {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         };
     } & {
@@ -105,18 +105,18 @@ export declare class PaymentsService {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        orderId: string;
         amount: number;
         method: import("@prisma/client").$Enums.PaymentMethod;
-        orderId: string;
     }>;
     updateStatus(id: string, dto: UpdatePaymentStatusDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.PaymentStatus;
+        orderId: string;
         amount: number;
         method: import("@prisma/client").$Enums.PaymentMethod;
-        orderId: string;
     }>;
     getUnpaidOrders(): Promise<({
         items: ({
@@ -134,11 +134,11 @@ export declare class PaymentsService {
         } & {
             id: string;
             createdAt: Date;
-            menuItemId: string;
-            quantity: number;
             notes: string | null;
-            orderId: string;
+            quantity: number;
             unitPrice: number;
+            orderId: string;
+            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -153,10 +153,10 @@ export declare class PaymentsService {
         createdAt: Date;
         updatedAt: Date;
         status: import("@prisma/client").$Enums.OrderStatus;
-        notes: string | null;
-        tableId: string;
         orderNumber: number;
+        notes: string | null;
         totalAmount: number;
+        tableId: string;
         staffId: string;
     })[]>;
 }

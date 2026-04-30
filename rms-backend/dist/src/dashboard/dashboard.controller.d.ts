@@ -29,11 +29,11 @@ export declare class DashboardController {
             } & {
                 id: string;
                 createdAt: Date;
-                menuItemId: string;
-                quantity: number;
                 notes: string | null;
-                orderId: string;
+                quantity: number;
                 unitPrice: number;
+                orderId: string;
+                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -48,10 +48,10 @@ export declare class DashboardController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         })[];
         topMenuItems: {
@@ -105,11 +105,11 @@ export declare class DashboardController {
             } & {
                 id: string;
                 createdAt: Date;
-                menuItemId: string;
-                quantity: number;
                 notes: string | null;
-                orderId: string;
+                quantity: number;
                 unitPrice: number;
+                orderId: string;
+                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -124,10 +124,10 @@ export declare class DashboardController {
             createdAt: Date;
             updatedAt: Date;
             status: import("@prisma/client").$Enums.OrderStatus;
-            notes: string | null;
-            tableId: string;
             orderNumber: number;
+            notes: string | null;
             totalAmount: number;
+            tableId: string;
             staffId: string;
         })[];
         ordersByStatus: (import("@prisma/client").Prisma.PickEnumerable<import("@prisma/client").Prisma.OrderGroupByOutputType, "status"[]> & {
