@@ -33,6 +33,9 @@ export const can = {
   // Settings / User management
   manageUsers: (user: User | null) => user?.role === 'ADMIN',
   viewSettings: (user: User | null) => !!user,
+
+  // Inventory
+  manageInventory: (user: User | null) => user?.role === 'ADMIN',
 } as const;
 
 export function isAdmin(user: User | null): boolean {

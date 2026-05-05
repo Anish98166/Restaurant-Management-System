@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ShoppingBag, UtensilsCrossed,
-  Table2, CreditCard, Settings, LogOut, ChefHat, Shield,
+  Table2, CreditCard, Settings, LogOut, ChefHat, Shield, Package,
 } from 'lucide-react';
 import { useLogout, useCurrentUser } from '@/hooks/useAuth';
 import { can } from '@/lib/permissions';
@@ -22,6 +22,7 @@ const navItems: NavItem[] = [
   { href: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { href: '/tables', label: 'Tables', icon: Table2 },
   { href: '/billing', label: 'Billing', icon: CreditCard },
+  { href: '/inventory', label: 'Inventory', icon: Package, adminOnly: true },
   { href: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 
