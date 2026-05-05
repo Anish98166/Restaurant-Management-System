@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ShoppingBag, UtensilsCrossed,
-  Table2, CreditCard, Settings, LogOut, ChefHat, Shield, Package, ChefHat as KdsIcon, CalendarCheck,
+  Table2, CreditCard, Settings, LogOut, ChefHat, Shield,
+  Package, CalendarCheck, BookOpen, BarChart2, Star, ChefHat as KdsIcon,
 } from 'lucide-react';
 import { useLogout, useCurrentUser } from '@/hooks/useAuth';
 import { can } from '@/lib/permissions';
@@ -22,9 +23,12 @@ const navItems: NavItem[] = [
   { href: '/orders', label: 'Orders', icon: ShoppingBag },
   { href: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { href: '/tables', label: 'Tables', icon: Table2 },
+  { href: '/reservations', label: 'Reservations', icon: BookOpen },
   { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/inventory', label: 'Inventory', icon: Package, adminOnly: true },
   { href: '/shift-report', label: 'Shift Report', icon: CalendarCheck, adminOnly: true },
+  { href: '/reports', label: 'Reports', icon: BarChart2, adminOnly: true },
+  { href: '/feedback', label: 'Feedback', icon: Star, adminOnly: true },
   { href: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 

@@ -12,6 +12,9 @@ import { InventoryModule } from './inventory/inventory.module';
 import { KdsModule } from './kds/kds.module';
 import { ModifiersModule } from './modifiers/modifiers.module';
 import { ShiftReportModule } from './shift-report/shift-report.module';
+import { ReservationsModule } from './reservations/reservations.module';
+import { ReportsModule } from './reports/reports.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { ShiftReportModule } from './shift-report/shift-report.module';
     KdsModule,
     ModifiersModule,
     ShiftReportModule,
+    ReservationsModule,
+    ReportsModule,
+    FeedbackModule,
   ],
 })
 export class AppModule {}

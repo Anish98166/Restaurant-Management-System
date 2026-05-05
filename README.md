@@ -32,6 +32,7 @@ Restaurant-Management-System/
 - **Tailwind CSS v4** — warm restaurant-style design system
 - **Axios** — HTTP client with JWT interceptors
 - **qrcode.react** — QR code generation for table ordering
+- **date-fns** — date formatting and manipulation
 
 ---
 
@@ -120,19 +121,27 @@ Frontend runs at **http://localhost:3000**
 - Filter by category and search by name
 
 ### Kitchen Display System (KDS) — `/kitchen`
-- Dedicated fullscreen view — no sidebar, no login required beyond JWT
-- Accessible via "Kitchen Display ↗" link in the sidebar (opens in new tab)
+- Dedicated fullscreen view — no sidebar, opens in new tab from sidebar footer
 - Color-coded order cards: 🔴 New (PENDING) · 🟡 Preparing · 🟢 Ready (SERVED)
 - Live elapsed time ticker per order; urgent pulse animation after 5 minutes
 - One-click **Bump** button advances each order to the next status
 - Sound alert (Web Audio API) on new incoming orders — mutable toggle
-- Auto-polls every 8 seconds for real-time updates
+- Auto-polls every 8 seconds
 
 ### Table Management
 - Visual grid of all tables with color-coded status (Available / Occupied / Reserved / Cleaning)
 - Click any table to update its status
 - Admin can add/delete tables
-- **QR Code** button on every table — generates a scannable QR code customers use to order directly from their phone
+- **QR Code** button on every table — generates a scannable QR code for customer self-ordering
+
+### Reservations — `/reservations`
+- Book tables for future dates and times with guest name, phone, party size, and notes
+- Conflict detection — blocks double-booking within 90 minutes on the same table
+- Cards grouped by date, sorted by time
+- Status flow: Confirmed → Seated → Completed (or Cancelled / No Show)
+- Seating a guest auto-marks the table Occupied; completing/cancelling auto-frees it
+- **Process No-Shows** button marks overdue confirmed reservations automatically
+- Create and edit modals with date/time pickers and table selector
 
 ### QR Customer Ordering — `/menu/[tableId]`
 - Public page — no login required for customers
@@ -140,6 +149,7 @@ Frontend runs at **http://localhost:3000**
 - Add items to cart, select modifiers, enter name and special requests, place order
 - Order appears instantly in the staff orders list and KDS, tagged as `(QR Order)`
 - Table is automatically marked Occupied; stock is deducted from inventory
+- **Feedback form** shown immediately after order is placed — 1–5 star rating + optional comment
 - QR codes can be downloaded as SVG for printing
 
 ### Inventory Management — `/inventory` *(Admin only)*
@@ -155,8 +165,21 @@ Frontend runs at **http://localhost:3000**
 - Live preview of today's activity: total orders, completed, cancelled, revenue
 - Payment breakdown by method (Cash / Card / Online)
 - Top 10 selling items by quantity with revenue
-- **Close Day** — one-click archives the report as an immutable snapshot; prevents duplicate closes
+- **Close Day** — one-click archives the report as an immutable snapshot
 - Expandable history of all past daily reports
+
+### Reports & Export — `/reports` *(Admin only)*
+- Date range picker with quick presets (Today / Last 7 days / Last 30 days / This month)
+- **Revenue tab** — total revenue, payment method breakdown, daily area chart
+- **Menu Items tab** — top 10 best sellers and worst sellers by quantity + revenue
+- **Staff Performance tab** — per-staff order counts, completion rate, revenue generated
+- **CSV export** — download orders or payments for any date range (opens with JWT auth)
+
+### Customer Feedback — `/feedback` *(Admin only)*
+- Aggregate summary: total reviews, average rating, star distribution bar chart
+- Per-menu-item average ratings ranked by score
+- Full review feed with customer name, order number, table, comment, and timestamp
+- Admin can delete individual reviews
 
 ### Billing
 - Unpaid orders alert panel
@@ -173,8 +196,11 @@ Frontend runs at **http://localhost:3000**
 | Dashboard analytics      | Full  | Summary only |
 | Menu CRUD + Modifiers    | ✅    | View only    |
 | Kitchen Display (KDS)    | ✅    | ✅           |
+| Reservations             | ✅    | ✅           |
 | Inventory management     | ✅    | —            |
 | Shift / Daily Report     | ✅    | —            |
+| Reports & Export         | ✅    | —            |
+| Customer Feedback        | ✅    | —            |
 | Table management         | ✅    | Status only  |
 | Orders                   | ✅    | ✅           |
 | Billing                  | ✅    | Process only |
@@ -191,10 +217,12 @@ ModifierGroup     — id, menuItemId (N:1), name, required, multiSelect
 Modifier          — id, modifierGroupId (N:1), name, priceAdjustment, available
 InventoryItem     — id, menuItemId (1:1), quantity, unit, lowStockThreshold, lastRestockedAt
 RestaurantTable   — id, tableNumber, capacity, status
+Reservation       — id, tableId, guestName, phone, partySize, date, time, notes, status, createdById
 Order             — id, orderNumber, status, totalAmount, tableId, staffId, notes
 OrderItem         — id, orderId, menuItemId, quantity, unitPrice, notes
 OrderItemModifier — id, orderItemId, modifierId, name, priceAdjustment
 Payment           — id, orderId (1:1), amount, method, status
+Feedback          — id, orderId (1:1), rating (1–5), comment, customerName
 DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, closedAt, closedById
 ```
 
@@ -210,21 +238,21 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | GET    | /api/auth/me       | JWT  | Current user profile  |
 
 ### Menu
-| Method | Path                                                          | Auth  | Description                        |
-|--------|---------------------------------------------------------------|-------|------------------------------------|
-| GET    | /api/menu                                                     | JWT   | List menu items (filterable)       |
-| GET    | /api/menu/:id                                                 | JWT   | Get single menu item               |
-| POST   | /api/menu                                                     | Admin | Create menu item                   |
-| PUT    | /api/menu/:id                                                 | Admin | Update menu item                   |
-| PATCH  | /api/menu/:id/toggle-availability                             | Admin | Toggle availability                |
-| DELETE | /api/menu/:id                                                 | Admin | Delete menu item                   |
-| GET    | /api/menu/:id/modifiers                                       | JWT   | Get modifier groups for item       |
-| POST   | /api/menu/:id/modifiers/groups                                | Admin | Create modifier group              |
-| PUT    | /api/menu/:id/modifiers/groups/:groupId                       | Admin | Update modifier group              |
-| DELETE | /api/menu/:id/modifiers/groups/:groupId                       | Admin | Delete modifier group              |
-| POST   | /api/menu/:id/modifiers/groups/:groupId/modifiers             | Admin | Add modifier to group              |
-| PUT    | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId      | Admin | Update modifier                    |
-| DELETE | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId      | Admin | Delete modifier                    |
+| Method | Path                                                     | Auth  | Description                  |
+|--------|----------------------------------------------------------|-------|------------------------------|
+| GET    | /api/menu                                                | JWT   | List menu items (filterable) |
+| GET    | /api/menu/:id                                            | JWT   | Get single menu item         |
+| POST   | /api/menu                                                | Admin | Create menu item             |
+| PUT    | /api/menu/:id                                            | Admin | Update menu item             |
+| PATCH  | /api/menu/:id/toggle-availability                        | Admin | Toggle availability          |
+| DELETE | /api/menu/:id                                            | Admin | Delete menu item             |
+| GET    | /api/menu/:id/modifiers                                  | JWT   | Get modifier groups          |
+| POST   | /api/menu/:id/modifiers/groups                           | Admin | Create modifier group        |
+| PUT    | /api/menu/:id/modifiers/groups/:groupId                  | Admin | Update modifier group        |
+| DELETE | /api/menu/:id/modifiers/groups/:groupId                  | Admin | Delete modifier group        |
+| POST   | /api/menu/:id/modifiers/groups/:groupId/modifiers        | Admin | Add modifier to group        |
+| PUT    | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId | Admin | Update modifier              |
+| DELETE | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId | Admin | Delete modifier              |
 
 ### Tables
 | Method | Path                   | Auth  | Description         |
@@ -236,6 +264,18 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | PATCH  | /api/tables/:id/status | JWT   | Update table status |
 | DELETE | /api/tables/:id        | Admin | Delete table        |
 
+### Reservations
+| Method | Path                                | Auth  | Description                          |
+|--------|-------------------------------------|-------|--------------------------------------|
+| GET    | /api/reservations                   | JWT   | List reservations (filterable)       |
+| GET    | /api/reservations/upcoming          | JWT   | Get upcoming confirmed reservations  |
+| GET    | /api/reservations/:id               | JWT   | Get single reservation               |
+| POST   | /api/reservations                   | JWT   | Create reservation                   |
+| PUT    | /api/reservations/:id               | JWT   | Update reservation                   |
+| PATCH  | /api/reservations/:id/status        | JWT   | Update status (seat/cancel/no-show)  |
+| DELETE | /api/reservations/:id               | Admin | Delete reservation                   |
+| POST   | /api/reservations/process-no-shows  | Admin | Mark overdue reservations as no-show |
+
 ### Orders
 | Method | Path                   | Auth  | Description         |
 |--------|------------------------|-------|---------------------|
@@ -246,10 +286,10 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | DELETE | /api/orders/:id        | Admin | Delete order        |
 
 ### KDS
-| Method | Path              | Auth | Description                        |
-|--------|-------------------|------|------------------------------------|
-| GET    | /api/kds/active   | JWT  | Get active kitchen orders          |
-| PATCH  | /api/kds/:id/bump | JWT  | Bump order to next status          |
+| Method | Path              | Auth | Description               |
+|--------|-------------------|------|---------------------------|
+| GET    | /api/kds/active   | JWT  | Get active kitchen orders |
+| PATCH  | /api/kds/:id/bump | JWT  | Bump order to next status |
 
 ### Payments
 | Method | Path                        | Auth  | Description           |
@@ -261,37 +301,55 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | PATCH  | /api/payments/:id/status    | Admin | Update payment status |
 
 ### Inventory *(Admin only)*
-| Method | Path                       | Description                    |
-|--------|----------------------------|--------------------------------|
-| GET    | /api/inventory             | List all inventory items       |
-| GET    | /api/inventory/low-stock   | Get low-stock items            |
-| GET    | /api/inventory/:id         | Get single inventory item      |
-| POST   | /api/inventory             | Start tracking a menu item     |
-| PUT    | /api/inventory/:id         | Update unit / threshold        |
-| PATCH  | /api/inventory/:id/restock | Add stock                      |
-| PATCH  | /api/inventory/:id/adjust  | Set exact stock quantity       |
-| DELETE | /api/inventory/:id         | Stop tracking                  |
+| Method | Path                       | Description                |
+|--------|----------------------------|----------------------------|
+| GET    | /api/inventory             | List all inventory items   |
+| GET    | /api/inventory/low-stock   | Get low-stock items        |
+| GET    | /api/inventory/:id         | Get single inventory item  |
+| POST   | /api/inventory             | Start tracking a menu item |
+| PUT    | /api/inventory/:id         | Update unit / threshold    |
+| PATCH  | /api/inventory/:id/restock | Add stock                  |
+| PATCH  | /api/inventory/:id/adjust  | Set exact stock quantity   |
+| DELETE | /api/inventory/:id         | Stop tracking              |
+
+### Reports *(Admin only)*
+| Method | Path                        | Description                        |
+|--------|-----------------------------|------------------------------------|
+| GET    | /api/reports/revenue        | Revenue report for a date range    |
+| GET    | /api/reports/items          | Best/worst selling items           |
+| GET    | /api/reports/staff          | Staff performance report           |
+| GET    | /api/reports/export/orders  | Export orders as CSV               |
+| GET    | /api/reports/export/payments| Export payments as CSV             |
 
 ### Shift Report *(Admin only)*
-| Method | Path                        | Description                          |
-|--------|-----------------------------|--------------------------------------|
-| GET    | /api/shift-report/preview   | Live preview of today's report       |
-| GET    | /api/shift-report/history   | All archived daily reports           |
-| GET    | /api/shift-report/history/:id | Single archived report             |
-| POST   | /api/shift-report/close     | Close the day and archive report     |
+| Method | Path                          | Description                      |
+|--------|-------------------------------|----------------------------------|
+| GET    | /api/shift-report/preview     | Live preview of today's report   |
+| GET    | /api/shift-report/history     | All archived daily reports       |
+| GET    | /api/shift-report/history/:id | Single archived report           |
+| POST   | /api/shift-report/close       | Close the day and archive report |
+
+### Feedback
+| Method | Path                      | Auth  | Description                        |
+|--------|---------------------------|-------|------------------------------------|
+| POST   | /api/feedback             | —     | Submit feedback (public, no auth)  |
+| GET    | /api/feedback             | Admin | Get all feedback                   |
+| GET    | /api/feedback/summary     | Admin | Rating summary + distribution      |
+| GET    | /api/feedback/menu-ratings| Admin | Average ratings per menu item      |
+| DELETE | /api/feedback/:id         | Admin | Delete a review                    |
 
 ### Dashboard
-| Method | Path                         | Auth  | Description           |
-|--------|------------------------------|-------|-----------------------|
-| GET    | /api/dashboard/analytics     | Admin | Full analytics        |
-| GET    | /api/dashboard/staff-summary | JWT   | Staff summary         |
+| Method | Path                         | Auth  | Description        |
+|--------|------------------------------|-------|--------------------|
+| GET    | /api/dashboard/analytics     | Admin | Full analytics     |
+| GET    | /api/dashboard/staff-summary | JWT   | Staff summary      |
 
 ### Public *(no auth — for QR customer ordering)*
-| Method | Path                        | Description                    |
-|--------|-----------------------------|--------------------------------|
-| GET    | /api/public/menu            | Get available menu items       |
-| GET    | /api/public/tables/:tableId | Get table info                 |
-| POST   | /api/public/orders          | Place order from QR scan       |
+| Method | Path                        | Description                  |
+|--------|-----------------------------|------------------------------|
+| GET    | /api/public/menu            | Get available menu items     |
+| GET    | /api/public/tables/:tableId | Get table info               |
+| POST   | /api/public/orders          | Place order from QR scan     |
 
 ---
 

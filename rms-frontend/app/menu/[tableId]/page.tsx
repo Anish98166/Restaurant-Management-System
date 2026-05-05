@@ -2,7 +2,7 @@
 import { useState, useEffect, use } from 'react';
 import {
   ShoppingCart, Plus, Minus, Trash2, Search,
-  UtensilsCrossed, CheckCircle, ChefHat,
+  UtensilsCrossed, CheckCircle, ChefHat, Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -68,8 +68,14 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
   const [submitting, setSubmitting] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState<number | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [showCart, setShowCart] = useState(false);
+  // Feedback state
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -144,6 +150,7 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
         })),
       });
       setOrderNumber(res.data.orderNumber);
+      setOrderId(res.data.id);
       setOrderPlaced(true);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to place order. Please try again.');
@@ -154,6 +161,25 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
 
   // ── Order Confirmed Screen ──────────────────────────────────────────────────
   if (orderPlaced) {
+    const handleFeedback = async () => {
+      if (!feedbackRating || !orderId) return;
+      setFeedbackSubmitting(true);
+      try {
+        await axios.post(`${API_BASE}/feedback`, {
+          orderId,
+          rating: feedbackRating,
+          comment: feedbackComment.trim() || undefined,
+          customerName: customerName.trim() || undefined,
+        });
+        setFeedbackSubmitted(true);
+      } catch {
+        // silently ignore — feedback is optional
+        setFeedbackSubmitted(true);
+      } finally {
+        setFeedbackSubmitting(false);
+      }
+    };
+
     return (
       <div className="min-h-screen bg-[#FFF8F0] flex items-center justify-center p-6">
         <div className="max-w-sm w-full text-center space-y-6">
@@ -172,12 +198,8 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
           <div className="bg-white rounded-2xl border border-[#F5E6D3] p-4 text-left space-y-2">
             {cart.map((c) => (
               <div key={c.menuItem.id} className="flex justify-between text-sm">
-                <span className="text-[#4E342E]">
-                  {c.quantity}× {c.menuItem.name}
-                </span>
-                <span className="text-[#FF8A65] font-medium">
-                  ${(c.menuItem.price * c.quantity).toFixed(2)}
-                </span>
+                <span className="text-[#4E342E]">{c.quantity}× {c.menuItem.name}</span>
+                <span className="text-[#FF8A65] font-medium">${(c.menuItem.price * c.quantity).toFixed(2)}</span>
               </div>
             ))}
             <div className="border-t border-[#F5E6D3] pt-2 flex justify-between font-bold">
@@ -185,6 +207,47 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
               <span className="text-[#FF8A65]">${total.toFixed(2)}</span>
             </div>
           </div>
+
+          {/* Feedback form */}
+          {!feedbackSubmitted ? (
+            <div className="bg-white rounded-2xl border border-[#F5E6D3] p-4 text-left space-y-3">
+              <p className="font-semibold text-[#4E342E] text-sm">How was your experience?</p>
+              <div className="flex gap-2 justify-center">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button key={s} type="button" onClick={() => setFeedbackRating(s)}>
+                    <Star className={`w-8 h-8 transition-colors ${s <= feedbackRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'}`} />
+                  </button>
+                ))}
+              </div>
+              {feedbackRating > 0 && (
+                <textarea
+                  className="w-full rounded-xl border border-[#E8D5C4] px-3 py-2 text-sm text-[#4E342E] placeholder-[#BCAAA4] focus:outline-none focus:ring-2 focus:ring-[#FF8A65] resize-none"
+                  rows={2}
+                  placeholder="Any comments? (optional)"
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                />
+              )}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setFeedbackSubmitted(true)} className="flex-1 text-sm text-[#8D6E63] hover:text-[#4E342E] transition-colors">
+                  Skip
+                </button>
+                <button
+                  type="button"
+                  onClick={handleFeedback}
+                  disabled={!feedbackRating || feedbackSubmitting}
+                  className="flex-1 bg-[#FF8A65] text-white rounded-xl py-2 text-sm font-medium hover:bg-[#FF7043] transition-colors disabled:opacity-50"
+                >
+                  {feedbackSubmitting ? 'Sending…' : 'Submit'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-3 text-sm text-green-700 flex items-center gap-2 justify-center">
+              <CheckCircle className="w-4 h-4" /> Thank you for your feedback!
+            </div>
+          )}
+
           <p className="text-sm text-[#8D6E63]">
             Table {table?.tableNumber} · Thank you for dining with us 🍽️
           </p>
