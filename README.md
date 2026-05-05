@@ -18,7 +18,7 @@ Restaurant-Management-System/
 
 ### Backend
 - **NestJS** — modular Node.js framework
-- **Prisma v7** — ORM with PostgreSQL driver adapter
+- **Prisma v7** — ORM with PostgreSQL driver adapter (`@prisma/adapter-pg`)
 - **PostgreSQL** — relational database
 - **JWT + Passport** — authentication with role-based access (Admin / Staff)
 - **Swagger** — auto-generated API docs at `/api/docs`
@@ -49,8 +49,7 @@ cd rms-backend
 # Install dependencies
 npm install
 
-# Create environment file
-# Create rms-backend/.env with:
+# Create environment file at rms-backend/.env
 # DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rms_db?schema=public"
 # JWT_SECRET="your-secret-key"
 
@@ -106,6 +105,7 @@ Frontend runs at **http://localhost:3000**
 
 ### Orders
 - Create orders with table + menu item selection
+- Modifier picker per item — select size, extras, etc. with live price adjustment
 - Real-time stock count shown per item so staff can see availability before ordering
 - Status flow: Pending → Preparing → Served → Completed
 - Optimistic updates via TanStack Query
@@ -114,9 +114,19 @@ Frontend runs at **http://localhost:3000**
 
 ### Menu Management
 - Full CRUD for menu items (Admin only)
+- **Modifier Groups** — add customisation options (size, extras, required choices) with per-option price adjustments
 - Toggle availability with optimistic updates
 - Stock column shows live inventory level per item
 - Filter by category and search by name
+
+### Kitchen Display System (KDS) — `/kitchen`
+- Dedicated fullscreen view — no sidebar, no login required beyond JWT
+- Accessible via "Kitchen Display ↗" link in the sidebar (opens in new tab)
+- Color-coded order cards: 🔴 New (PENDING) · 🟡 Preparing · 🟢 Ready (SERVED)
+- Live elapsed time ticker per order; urgent pulse animation after 5 minutes
+- One-click **Bump** button advances each order to the next status
+- Sound alert (Web Audio API) on new incoming orders — mutable toggle
+- Auto-polls every 8 seconds for real-time updates
 
 ### Table Management
 - Visual grid of all tables with color-coded status (Available / Occupied / Reserved / Cleaning)
@@ -124,26 +134,29 @@ Frontend runs at **http://localhost:3000**
 - Admin can add/delete tables
 - **QR Code** button on every table — generates a scannable QR code customers use to order directly from their phone
 
-### QR Customer Ordering
-- Each table has a unique QR code linking to `/menu/[tableId]`
+### QR Customer Ordering — `/menu/[tableId]`
 - Public page — no login required for customers
-- Customers browse the full menu, add items to cart, enter their name and special requests, and place the order
-- Order appears instantly in the staff orders list tagged as `(QR Order)`
-- Table is automatically marked Occupied when a QR order is placed
-- Stock is deducted from inventory just like a staff-placed order
+- Customers browse the full menu with category tabs and search
+- Add items to cart, select modifiers, enter name and special requests, place order
+- Order appears instantly in the staff orders list and KDS, tagged as `(QR Order)`
+- Table is automatically marked Occupied; stock is deducted from inventory
 - QR codes can be downloaded as SVG for printing
 
-### Inventory Management *(Admin only)*
-- Track stock levels for any menu item
-- Set a unit (portion, kg, litre, etc.) and a low-stock alert threshold per item
+### Inventory Management — `/inventory` *(Admin only)*
+- Track stock levels per menu item with unit and low-stock threshold
 - **Restock** — add quantity to current stock
 - **Set Stock** — override to an exact quantity for manual corrections
 - Stats cards: total tracked / in stock / low stock / out of stock
 - Orange alert banner when items need attention
-- When stock hits 0, the menu item is automatically marked unavailable — staff can no longer order it
-- When restocked above 0, the menu item is automatically re-enabled
-- Stock is deducted automatically on every order (staff-placed and QR)
-- Items without inventory tracking are unaffected (untracked items remain orderable)
+- Stock hits 0 → menu item auto-marked unavailable; restocked above 0 → auto re-enabled
+- Stock deducted automatically on every order (staff-placed and QR)
+
+### Shift / Daily Close Report — `/shift-report` *(Admin only)*
+- Live preview of today's activity: total orders, completed, cancelled, revenue
+- Payment breakdown by method (Cash / Card / Online)
+- Top 10 selling items by quantity with revenue
+- **Close Day** — one-click archives the report as an immutable snapshot; prevents duplicate closes
+- Expandable history of all past daily reports
 
 ### Billing
 - Unpaid orders alert panel
@@ -151,30 +164,38 @@ Frontend runs at **http://localhost:3000**
 - Full payment history (Admin only)
 - Refund support
 
-### Role-Based Access
+---
 
-| Feature              | Admin | Staff |
-|----------------------|-------|-------|
-| Dashboard analytics  | Full  | Summary |
-| Menu CRUD            | ✅    | View only |
-| Inventory management | ✅    | — |
-| Table management     | ✅    | Status update only |
-| Orders               | ✅    | ✅ |
-| Billing              | ✅    | Process only |
-| Settings             | ✅    | — |
+## Role-Based Access
+
+| Feature                  | Admin | Staff        |
+|--------------------------|-------|--------------|
+| Dashboard analytics      | Full  | Summary only |
+| Menu CRUD + Modifiers    | ✅    | View only    |
+| Kitchen Display (KDS)    | ✅    | ✅           |
+| Inventory management     | ✅    | —            |
+| Shift / Daily Report     | ✅    | —            |
+| Table management         | ✅    | Status only  |
+| Orders                   | ✅    | ✅           |
+| Billing                  | ✅    | Process only |
+| Settings                 | ✅    | —            |
 
 ---
 
 ## Data Model
 
 ```
-User            — id, email, name, password, role (ADMIN | STAFF)
-MenuItem        — id, name, description, price, category, available, imageUrl
-InventoryItem   — id, menuItemId (1:1), quantity, unit, lowStockThreshold, lastRestockedAt
-RestaurantTable — id, tableNumber, capacity, status
-Order           — id, orderNumber, status, totalAmount, tableId, staffId, notes
-OrderItem       — id, orderId, menuItemId, quantity, unitPrice, notes
-Payment         — id, orderId (1:1), amount, method, status
+User              — id, email, name, password, role (ADMIN | STAFF)
+MenuItem          — id, name, description, price, category, available, imageUrl
+ModifierGroup     — id, menuItemId (N:1), name, required, multiSelect
+Modifier          — id, modifierGroupId (N:1), name, priceAdjustment, available
+InventoryItem     — id, menuItemId (1:1), quantity, unit, lowStockThreshold, lastRestockedAt
+RestaurantTable   — id, tableNumber, capacity, status
+Order             — id, orderNumber, status, totalAmount, tableId, staffId, notes
+OrderItem         — id, orderId, menuItemId, quantity, unitPrice, notes
+OrderItemModifier — id, orderItemId, modifierId, name, priceAdjustment
+Payment           — id, orderId (1:1), amount, method, status
+DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, closedAt, closedById
 ```
 
 ---
@@ -182,67 +203,88 @@ Payment         — id, orderId (1:1), amount, method, status
 ## API Endpoints
 
 ### Auth
-| Method | Path              | Description           | Auth |
-|--------|-------------------|-----------------------|------|
-| POST   | /api/auth/register | Register user        | —    |
-| POST   | /api/auth/login    | Login                | —    |
-| GET    | /api/auth/me       | Current user profile | JWT  |
+| Method | Path               | Auth | Description           |
+|--------|--------------------|------|-----------------------|
+| POST   | /api/auth/register | —    | Register user         |
+| POST   | /api/auth/login    | —    | Login                 |
+| GET    | /api/auth/me       | JWT  | Current user profile  |
 
 ### Menu
-| Method | Path                              | Description                    | Auth       |
-|--------|-----------------------------------|--------------------------------|------------|
-| GET    | /api/menu                         | List menu items (filterable)   | JWT        |
-| GET    | /api/menu/:id                     | Get single menu item           | JWT        |
-| POST   | /api/menu                         | Create menu item               | Admin      |
-| PUT    | /api/menu/:id                     | Update menu item               | Admin      |
-| PATCH  | /api/menu/:id/toggle-availability | Toggle availability            | Admin      |
-| DELETE | /api/menu/:id                     | Delete menu item               | Admin      |
+| Method | Path                                                          | Auth  | Description                        |
+|--------|---------------------------------------------------------------|-------|------------------------------------|
+| GET    | /api/menu                                                     | JWT   | List menu items (filterable)       |
+| GET    | /api/menu/:id                                                 | JWT   | Get single menu item               |
+| POST   | /api/menu                                                     | Admin | Create menu item                   |
+| PUT    | /api/menu/:id                                                 | Admin | Update menu item                   |
+| PATCH  | /api/menu/:id/toggle-availability                             | Admin | Toggle availability                |
+| DELETE | /api/menu/:id                                                 | Admin | Delete menu item                   |
+| GET    | /api/menu/:id/modifiers                                       | JWT   | Get modifier groups for item       |
+| POST   | /api/menu/:id/modifiers/groups                                | Admin | Create modifier group              |
+| PUT    | /api/menu/:id/modifiers/groups/:groupId                       | Admin | Update modifier group              |
+| DELETE | /api/menu/:id/modifiers/groups/:groupId                       | Admin | Delete modifier group              |
+| POST   | /api/menu/:id/modifiers/groups/:groupId/modifiers             | Admin | Add modifier to group              |
+| PUT    | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId      | Admin | Update modifier                    |
+| DELETE | /api/menu/:id/modifiers/groups/:groupId/modifiers/:modId      | Admin | Delete modifier                    |
 
 ### Tables
-| Method | Path                    | Description          | Auth       |
-|--------|-------------------------|----------------------|------------|
-| GET    | /api/tables             | List all tables      | JWT        |
-| GET    | /api/tables/:id         | Get single table     | JWT        |
-| POST   | /api/tables             | Create table         | Admin      |
-| PUT    | /api/tables/:id         | Update table         | Admin      |
-| PATCH  | /api/tables/:id/status  | Update table status  | JWT        |
-| DELETE | /api/tables/:id         | Delete table         | Admin      |
+| Method | Path                   | Auth  | Description         |
+|--------|------------------------|-------|---------------------|
+| GET    | /api/tables            | JWT   | List all tables     |
+| GET    | /api/tables/:id        | JWT   | Get single table    |
+| POST   | /api/tables            | Admin | Create table        |
+| PUT    | /api/tables/:id        | Admin | Update table        |
+| PATCH  | /api/tables/:id/status | JWT   | Update table status |
+| DELETE | /api/tables/:id        | Admin | Delete table        |
 
 ### Orders
-| Method | Path                    | Description          | Auth       |
-|--------|-------------------------|----------------------|------------|
-| GET    | /api/orders             | List orders          | JWT        |
-| GET    | /api/orders/:id         | Get single order     | JWT        |
-| POST   | /api/orders             | Create order         | JWT        |
-| PATCH  | /api/orders/:id/status  | Update order status  | JWT        |
-| DELETE | /api/orders/:id         | Delete order         | Admin      |
+| Method | Path                   | Auth  | Description         |
+|--------|------------------------|-------|---------------------|
+| GET    | /api/orders            | JWT   | List orders         |
+| GET    | /api/orders/:id        | JWT   | Get single order    |
+| POST   | /api/orders            | JWT   | Create order        |
+| PATCH  | /api/orders/:id/status | JWT   | Update order status |
+| DELETE | /api/orders/:id        | Admin | Delete order        |
+
+### KDS
+| Method | Path              | Auth | Description                        |
+|--------|-------------------|------|------------------------------------|
+| GET    | /api/kds/active   | JWT  | Get active kitchen orders          |
+| PATCH  | /api/kds/:id/bump | JWT  | Bump order to next status          |
 
 ### Payments
-| Method | Path                         | Description           | Auth       |
-|--------|------------------------------|-----------------------|------------|
-| GET    | /api/payments                | List payments         | JWT        |
-| GET    | /api/payments/:id            | Get single payment    | JWT        |
-| GET    | /api/payments/unpaid-orders  | Get unpaid orders     | JWT        |
-| POST   | /api/payments                | Process payment       | JWT        |
-| PATCH  | /api/payments/:id/status     | Update payment status | Admin      |
+| Method | Path                        | Auth  | Description           |
+|--------|-----------------------------|-------|-----------------------|
+| GET    | /api/payments               | JWT   | List payments         |
+| GET    | /api/payments/:id           | JWT   | Get single payment    |
+| GET    | /api/payments/unpaid-orders | JWT   | Get unpaid orders     |
+| POST   | /api/payments               | JWT   | Process payment       |
+| PATCH  | /api/payments/:id/status    | Admin | Update payment status |
 
 ### Inventory *(Admin only)*
-| Method | Path                        | Description                    | Auth  |
-|--------|-----------------------------|--------------------------------|-------|
-| GET    | /api/inventory              | List all inventory items       | Admin |
-| GET    | /api/inventory/low-stock    | Get low-stock items            | Admin |
-| GET    | /api/inventory/:id          | Get single inventory item      | Admin |
-| POST   | /api/inventory              | Start tracking a menu item     | Admin |
-| PUT    | /api/inventory/:id          | Update unit / threshold        | Admin |
-| PATCH  | /api/inventory/:id/restock  | Add stock                      | Admin |
-| PATCH  | /api/inventory/:id/adjust   | Set exact stock quantity       | Admin |
-| DELETE | /api/inventory/:id          | Stop tracking                  | Admin |
+| Method | Path                       | Description                    |
+|--------|----------------------------|--------------------------------|
+| GET    | /api/inventory             | List all inventory items       |
+| GET    | /api/inventory/low-stock   | Get low-stock items            |
+| GET    | /api/inventory/:id         | Get single inventory item      |
+| POST   | /api/inventory             | Start tracking a menu item     |
+| PUT    | /api/inventory/:id         | Update unit / threshold        |
+| PATCH  | /api/inventory/:id/restock | Add stock                      |
+| PATCH  | /api/inventory/:id/adjust  | Set exact stock quantity       |
+| DELETE | /api/inventory/:id         | Stop tracking                  |
+
+### Shift Report *(Admin only)*
+| Method | Path                        | Description                          |
+|--------|-----------------------------|--------------------------------------|
+| GET    | /api/shift-report/preview   | Live preview of today's report       |
+| GET    | /api/shift-report/history   | All archived daily reports           |
+| GET    | /api/shift-report/history/:id | Single archived report             |
+| POST   | /api/shift-report/close     | Close the day and archive report     |
 
 ### Dashboard
-| Method | Path                        | Description           | Auth  |
-|--------|-----------------------------|-----------------------|-------|
-| GET    | /api/dashboard/analytics    | Full analytics        | Admin |
-| GET    | /api/dashboard/staff-summary| Staff summary         | JWT   |
+| Method | Path                         | Auth  | Description           |
+|--------|------------------------------|-------|-----------------------|
+| GET    | /api/dashboard/analytics     | Admin | Full analytics        |
+| GET    | /api/dashboard/staff-summary | JWT   | Staff summary         |
 
 ### Public *(no auth — for QR customer ordering)*
 | Method | Path                        | Description                    |
@@ -271,6 +313,6 @@ Payment         — id, orderId (1:1), amount, method, status
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rms_db?schema=public"
 JWT_SECRET="your-secret-key"
-PORT=3001                        # optional, defaults to 3001
+PORT=3001                             # optional, defaults to 3001
 FRONTEND_URL="http://localhost:3000"  # optional, for CORS
 ```

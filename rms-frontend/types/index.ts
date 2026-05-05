@@ -14,6 +14,26 @@ export interface User {
   updatedAt: string;
 }
 
+export interface Modifier {
+  id: string;
+  modifierGroupId: string;
+  name: string;
+  priceAdjustment: number;
+  available: boolean;
+  createdAt: string;
+}
+
+export interface ModifierGroup {
+  id: string;
+  menuItemId: string;
+  name: string;
+  required: boolean;
+  multiSelect: boolean;
+  createdAt: string;
+  updatedAt: string;
+  modifiers: Modifier[];
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -23,6 +43,7 @@ export interface MenuItem {
   available: boolean;
   imageUrl?: string;
   inventoryItem?: InventoryItem | null;
+  modifierGroups?: ModifierGroup[];
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +69,13 @@ export interface RestaurantTable {
   updatedAt: string;
 }
 
+export interface OrderItemModifier {
+  id: string;
+  modifierId: string;
+  name: string;
+  priceAdjustment: number;
+}
+
 export interface OrderItem {
   id: string;
   quantity: number;
@@ -56,6 +84,7 @@ export interface OrderItem {
   menuItemId: string;
   menuItem: MenuItem;
   orderId: string;
+  modifiers: OrderItemModifier[];
 }
 
 export interface Payment {
@@ -118,4 +147,20 @@ export interface DashboardAnalytics {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface DailyReport {
+  id: string;
+  date: string;
+  totalOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  totalRevenue: number;
+  cashRevenue: number;
+  cardRevenue: number;
+  onlineRevenue: number;
+  topItems: Array<{ name: string; quantity: number; revenue: number }>;
+  paymentBreakdown: Array<{ method: string; amount: number; count: number }>;
+  closedAt: string;
+  closedById: string;
 }

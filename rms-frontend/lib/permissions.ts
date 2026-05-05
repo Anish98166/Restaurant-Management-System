@@ -36,6 +36,12 @@ export const can = {
 
   // Inventory
   manageInventory: (user: User | null) => user?.role === 'ADMIN',
+
+  // Shift Report
+  viewShiftReport: (user: User | null) => user?.role === 'ADMIN',
+
+  // KDS — all authenticated users can view kitchen display
+  viewKitchen: (user: User | null) => !!user,
 } as const;
 
 export function isAdmin(user: User | null): boolean {

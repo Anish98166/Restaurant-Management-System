@@ -7,6 +7,11 @@ import { MenuCategory } from '@prisma/client';
 export class MenuService {
   constructor(private prisma: PrismaService) {}
 
+  private menuInclude = {
+    inventoryItem: true,
+    modifierGroups: { include: { modifiers: { orderBy: { name: 'asc' as const } } }, orderBy: { name: 'asc' as const } },
+  };
+
   async findAll(query: MenuItemQueryDto) {
     const { category, available, search, page = 1, limit = 20 } = query;
     const skip = (Number(page) - 1) * Number(limit);
@@ -22,7 +27,7 @@ export class MenuService {
         skip,
         take: Number(limit),
         orderBy: { createdAt: 'desc' },
-        include: { inventoryItem: true },
+        include: this.menuInclude,
       }),
       this.prisma.menuItem.count({ where }),
     ]);
@@ -36,19 +41,19 @@ export class MenuService {
   async findOne(id: string) {
     const item = await this.prisma.menuItem.findUnique({
       where: { id },
-      include: { inventoryItem: true },
+      include: this.menuInclude,
     });
     if (!item) throw new NotFoundException(`Menu item ${id} not found`);
     return item;
   }
 
   async create(dto: CreateMenuItemDto) {
-    return this.prisma.menuItem.create({ data: dto });
+    return this.prisma.menuItem.create({ data: dto, include: this.menuInclude });
   }
 
   async update(id: string, dto: UpdateMenuItemDto) {
     await this.findOne(id);
-    return this.prisma.menuItem.update({ where: { id }, data: dto });
+    return this.prisma.menuItem.update({ where: { id }, data: dto, include: this.menuInclude });
   }
 
   async remove(id: string) {
@@ -61,6 +66,7 @@ export class MenuService {
     return this.prisma.menuItem.update({
       where: { id },
       data: { available: !item.available },
+      include: this.menuInclude,
     });
   }
 }
