@@ -97,13 +97,14 @@ model Modifier {
 }
 
 model RestaurantTable {
-  id          String      @id @default(cuid())
-  tableNumber Int         @unique
-  capacity    Int
-  status      TableStatus @default(AVAILABLE)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orders      Order[]
+  id           String        @id @default(cuid())
+  tableNumber  Int           @unique
+  capacity     Int
+  status       TableStatus   @default(AVAILABLE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       Order[]
+  reservations Reservation[]
 }
 
 model Order {
@@ -118,6 +119,7 @@ model Order {
   staff       User            @relation(fields: [staffId], references: [id])
   items       OrderItem[]
   payment     Payment?
+  feedback    Feedback?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 }
@@ -182,4 +184,38 @@ model DailyReport {
   paymentBreakdownJson String
   closedAt             DateTime @default(now())
   closedById           String
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Reservation {
+  id          String            @id @default(cuid())
+  tableId     String
+  table       RestaurantTable   @relation(fields: [tableId], references: [id])
+  guestName   String
+  phone       String
+  partySize   Int
+  date        String
+  time        String
+  notes       String?
+  status      ReservationStatus @default(CONFIRMED)
+  createdById String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model Feedback {
+  id           String   @id @default(cuid())
+  orderId      String   @unique
+  order        Order    @relation(fields: [orderId], references: [id])
+  rating       Int
+  comment      String?
+  customerName String?
+  createdAt    DateTime @default(now())
 }

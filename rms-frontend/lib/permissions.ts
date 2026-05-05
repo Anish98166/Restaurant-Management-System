@@ -42,6 +42,15 @@ export const can = {
 
   // KDS — all authenticated users can view kitchen display
   viewKitchen: (user: User | null) => !!user,
+
+  // Reservations
+  manageReservations: (user: User | null) => !!user,
+
+  // Reports
+  viewReports: (user: User | null) => user?.role === 'ADMIN',
+
+  // Feedback
+  viewFeedback: (user: User | null) => user?.role === 'ADMIN',
 } as const;
 
 export function isAdmin(user: User | null): boolean {

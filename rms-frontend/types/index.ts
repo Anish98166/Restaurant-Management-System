@@ -149,6 +149,78 @@ export interface AuthResponse {
   token: string;
 }
 
+export type ReservationStatus = 'CONFIRMED' | 'SEATED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+export interface Reservation {
+  id: string;
+  tableId: string;
+  table: Pick<RestaurantTable, 'id' | 'tableNumber' | 'capacity' | 'status'>;
+  guestName: string;
+  phone: string;
+  partySize: number;
+  date: string;
+  time: string;
+  notes?: string;
+  status: ReservationStatus;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Feedback {
+  id: string;
+  orderId: string;
+  rating: number;
+  comment?: string;
+  customerName?: string;
+  createdAt: string;
+  order?: {
+    orderNumber: number;
+    createdAt: string;
+    table: { tableNumber: number };
+  };
+}
+
+export interface FeedbackSummary {
+  totalReviews: number;
+  avgRating: number;
+  distribution: Record<number, number>;
+}
+
+export interface MenuItemRating {
+  menuItemId: string;
+  name: string;
+  avgRating: number;
+  count: number;
+}
+
+export interface RevenueReport {
+  startDate: string;
+  endDate: string;
+  totalRevenue: number;
+  totalOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  byMethod: { CASH: number; CARD: number; ONLINE: number };
+  daily: Array<{ date: string; revenue: number }>;
+}
+
+export interface ItemPerformanceReport {
+  startDate: string;
+  endDate: string;
+  best: Array<{ menuItemId: string; name: string; category: string; quantity: number; revenue: number }>;
+  worst: Array<{ menuItemId: string; name: string; category: string; quantity: number; revenue: number }>;
+}
+
+export interface StaffPerformanceReport {
+  startDate: string;
+  endDate: string;
+  staff: Array<{
+    staffId: string; name: string; role: string;
+    totalOrders: number; completedOrders: number; cancelledOrders: number; revenue: number;
+  }>;
+}
+
 export interface DailyReport {
   id: string;
   date: string;
