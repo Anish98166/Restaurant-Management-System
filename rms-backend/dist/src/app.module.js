@@ -16,6 +16,11 @@ const tables_module_1 = require("./tables/tables.module");
 const orders_module_1 = require("./orders/orders.module");
 const payments_module_1 = require("./payments/payments.module");
 const dashboard_module_1 = require("./dashboard/dashboard.module");
+const public_module_1 = require("./public/public.module");
+const inventory_module_1 = require("./inventory/inventory.module");
+const kds_module_1 = require("./kds/kds.module");
+const modifiers_module_1 = require("./modifiers/modifiers.module");
+const shift_report_module_1 = require("./shift-report/shift-report.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -30,6 +35,11 @@ exports.AppModule = AppModule = __decorate([
             orders_module_1.OrdersModule,
             payments_module_1.PaymentsModule,
             dashboard_module_1.DashboardModule,
+            public_module_1.PublicModule,
+            inventory_module_1.InventoryModule,
+            kds_module_1.KdsModule,
+            modifiers_module_1.ModifiersModule,
+            shift_report_module_1.ShiftReportModule,
         ],
     })
 ], AppModule);

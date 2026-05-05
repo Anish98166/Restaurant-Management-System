@@ -59,54 +59,90 @@ model User {
 }
 
 model MenuItem {
-  id           String       @id @default(cuid())
-  name         String
-  description  String?
-  price        Float
-  category     MenuCategory
-  available    Boolean      @default(true)
-  imageUrl     String?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  orderItems   OrderItem[]
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  price          Float
+  category       MenuCategory
+  available      Boolean         @default(true)
+  imageUrl       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  orderItems     OrderItem[]
+  inventoryItem  InventoryItem?
+  modifierGroups ModifierGroup[]
+}
+
+model ModifierGroup {
+  id          String     @id @default(cuid())
+  menuItemId  String
+  menuItem    MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  name        String
+  required    Boolean    @default(false)
+  multiSelect Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  modifiers   Modifier[]
+}
+
+model Modifier {
+  id                 String              @id @default(cuid())
+  modifierGroupId    String
+  modifierGroup      ModifierGroup       @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+  name               String
+  priceAdjustment    Float               @default(0)
+  available          Boolean             @default(true)
+  createdAt          DateTime            @default(now())
+  orderItemModifiers OrderItemModifier[]
 }
 
 model RestaurantTable {
-  id           String      @id @default(cuid())
-  tableNumber  Int         @unique
-  capacity     Int
-  status       TableStatus @default(AVAILABLE)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  orders       Order[]
+  id          String      @id @default(cuid())
+  tableNumber Int         @unique
+  capacity    Int
+  status      TableStatus @default(AVAILABLE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orders      Order[]
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  orderNumber Int         @unique @default(autoincrement())
-  status      OrderStatus @default(PENDING)
+  id          String          @id @default(cuid())
+  orderNumber Int             @unique @default(autoincrement())
+  status      OrderStatus     @default(PENDING)
   notes       String?
-  totalAmount Float       @default(0)
+  totalAmount Float           @default(0)
   tableId     String
   table       RestaurantTable @relation(fields: [tableId], references: [id])
   staffId     String
-  staff       User        @relation(fields: [staffId], references: [id])
+  staff       User            @relation(fields: [staffId], references: [id])
   items       OrderItem[]
   payment     Payment?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model OrderItem {
-  id         String   @id @default(cuid())
+  id         String              @id @default(cuid())
   quantity   Int
   unitPrice  Float
   notes      String?
   orderId    String
-  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order      Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
   menuItemId String
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
-  createdAt  DateTime @default(now())
+  menuItem   MenuItem            @relation(fields: [menuItemId], references: [id])
+  modifiers  OrderItemModifier[]
+  createdAt  DateTime            @default(now())
+}
+
+model OrderItemModifier {
+  id              String    @id @default(cuid())
+  orderItemId     String
+  orderItem       OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  modifierId      String
+  modifier        Modifier  @relation(fields: [modifierId], references: [id])
+  name            String
+  priceAdjustment Float     @default(0)
 }
 
 model Payment {
@@ -118,4 +154,32 @@ model Payment {
   order     Order         @relation(fields: [orderId], references: [id])
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+model InventoryItem {
+  id                String    @id @default(cuid())
+  menuItemId        String    @unique
+  menuItem          MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  quantity          Int       @default(0)
+  unit              String    @default("portion")
+  lowStockThreshold Int       @default(10)
+  lastRestockedAt   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model DailyReport {
+  id                   String   @id @default(cuid())
+  date                 String   @unique
+  totalOrders          Int
+  completedOrders      Int
+  cancelledOrders      Int
+  totalRevenue         Float
+  cashRevenue          Float
+  cardRevenue          Float
+  onlineRevenue        Float
+  topItemsJson         String
+  paymentBreakdownJson String
+  closedAt             DateTime @default(now())
+  closedById           String
 }

@@ -3,6 +3,12 @@ import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
 
+export class OrderItemModifierDto {
+  @ApiProperty()
+  @IsString()
+  modifierId: string;
+}
+
 export class OrderItemDto {
   @ApiProperty()
   @IsString()
@@ -17,6 +23,13 @@ export class OrderItemDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @ApiPropertyOptional({ type: [OrderItemModifierDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => OrderItemModifierDto)
+  @IsOptional()
+  modifiers?: OrderItemModifierDto[];
 }
 
 export class CreateOrderDto {

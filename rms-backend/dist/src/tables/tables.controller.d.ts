@@ -40,11 +40,11 @@ export declare class TablesController {
             } & {
                 id: string;
                 createdAt: Date;
-                notes: string | null;
+                menuItemId: string;
                 quantity: number;
+                notes: string | null;
                 unitPrice: number;
                 orderId: string;
-                menuItemId: string;
             })[];
         } & {
             id: string;

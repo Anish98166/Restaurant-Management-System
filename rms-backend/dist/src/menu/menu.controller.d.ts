@@ -4,7 +4,36 @@ export declare class MenuController {
     private menuService;
     constructor(menuService: MenuService);
     findAll(query: MenuItemQueryDto): Promise<{
-        data: {
+        data: ({
+            inventoryItem: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                menuItemId: string;
+                quantity: number;
+                unit: string;
+                lowStockThreshold: number;
+                lastRestockedAt: Date | null;
+            } | null;
+            modifierGroups: ({
+                modifiers: {
+                    id: string;
+                    name: string;
+                    createdAt: Date;
+                    available: boolean;
+                    modifierGroupId: string;
+                    priceAdjustment: number;
+                }[];
+            } & {
+                id: string;
+                name: string;
+                createdAt: Date;
+                updatedAt: Date;
+                required: boolean;
+                menuItemId: string;
+                multiSelect: boolean;
+            })[];
+        } & {
             id: string;
             name: string;
             createdAt: Date;
@@ -14,7 +43,7 @@ export declare class MenuController {
             category: import("@prisma/client").$Enums.MenuCategory;
             available: boolean;
             imageUrl: string | null;
-        }[];
+        })[];
         meta: {
             total: number;
             page: number;
@@ -23,6 +52,35 @@ export declare class MenuController {
         };
     }>;
     findOne(id: string): Promise<{
+        inventoryItem: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            menuItemId: string;
+            quantity: number;
+            unit: string;
+            lowStockThreshold: number;
+            lastRestockedAt: Date | null;
+        } | null;
+        modifierGroups: ({
+            modifiers: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                available: boolean;
+                modifierGroupId: string;
+                priceAdjustment: number;
+            }[];
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            required: boolean;
+            menuItemId: string;
+            multiSelect: boolean;
+        })[];
+    } & {
         id: string;
         name: string;
         createdAt: Date;
@@ -34,6 +92,35 @@ export declare class MenuController {
         imageUrl: string | null;
     }>;
     create(dto: CreateMenuItemDto): Promise<{
+        inventoryItem: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            menuItemId: string;
+            quantity: number;
+            unit: string;
+            lowStockThreshold: number;
+            lastRestockedAt: Date | null;
+        } | null;
+        modifierGroups: ({
+            modifiers: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                available: boolean;
+                modifierGroupId: string;
+                priceAdjustment: number;
+            }[];
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            required: boolean;
+            menuItemId: string;
+            multiSelect: boolean;
+        })[];
+    } & {
         id: string;
         name: string;
         createdAt: Date;
@@ -45,6 +132,35 @@ export declare class MenuController {
         imageUrl: string | null;
     }>;
     update(id: string, dto: UpdateMenuItemDto): Promise<{
+        inventoryItem: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            menuItemId: string;
+            quantity: number;
+            unit: string;
+            lowStockThreshold: number;
+            lastRestockedAt: Date | null;
+        } | null;
+        modifierGroups: ({
+            modifiers: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                available: boolean;
+                modifierGroupId: string;
+                priceAdjustment: number;
+            }[];
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            required: boolean;
+            menuItemId: string;
+            multiSelect: boolean;
+        })[];
+    } & {
         id: string;
         name: string;
         createdAt: Date;
@@ -56,6 +172,35 @@ export declare class MenuController {
         imageUrl: string | null;
     }>;
     toggleAvailability(id: string): Promise<{
+        inventoryItem: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            menuItemId: string;
+            quantity: number;
+            unit: string;
+            lowStockThreshold: number;
+            lastRestockedAt: Date | null;
+        } | null;
+        modifierGroups: ({
+            modifiers: {
+                id: string;
+                name: string;
+                createdAt: Date;
+                available: boolean;
+                modifierGroupId: string;
+                priceAdjustment: number;
+            }[];
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            required: boolean;
+            menuItemId: string;
+            multiSelect: boolean;
+        })[];
+    } & {
         id: string;
         name: string;
         createdAt: Date;

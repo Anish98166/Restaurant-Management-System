@@ -9,15 +9,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrderQueryDto = exports.UpdateOrderStatusDto = exports.CreateOrderDto = exports.OrderItemDto = void 0;
+exports.OrderQueryDto = exports.UpdateOrderStatusDto = exports.CreateOrderDto = exports.OrderItemDto = exports.OrderItemModifierDto = void 0;
 const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
+class OrderItemModifierDto {
+    modifierId;
+}
+exports.OrderItemModifierDto = OrderItemModifierDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], OrderItemModifierDto.prototype, "modifierId", void 0);
 class OrderItemDto {
     menuItemId;
     quantity;
     notes;
+    modifiers;
 }
 exports.OrderItemDto = OrderItemDto;
 __decorate([
@@ -37,6 +47,14 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], OrderItemDto.prototype, "notes", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ type: [OrderItemModifierDto] }),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.ValidateNested)({ each: true }),
+    (0, class_transformer_1.Type)(() => OrderItemModifierDto),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Array)
+], OrderItemDto.prototype, "modifiers", void 0);
 class CreateOrderDto {
     tableId;
     notes;

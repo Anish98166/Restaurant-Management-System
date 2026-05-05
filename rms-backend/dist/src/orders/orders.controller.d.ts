@@ -26,14 +26,21 @@ export declare class OrdersController {
                     available: boolean;
                     imageUrl: string | null;
                 };
+                modifiers: {
+                    id: string;
+                    name: string;
+                    priceAdjustment: number;
+                    modifierId: string;
+                    orderItemId: string;
+                }[];
             } & {
                 id: string;
                 createdAt: Date;
-                notes: string | null;
+                menuItemId: string;
                 quantity: number;
+                notes: string | null;
                 unitPrice: number;
                 orderId: string;
-                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -89,14 +96,21 @@ export declare class OrdersController {
                 available: boolean;
                 imageUrl: string | null;
             };
+            modifiers: {
+                id: string;
+                name: string;
+                priceAdjustment: number;
+                modifierId: string;
+                orderItemId: string;
+            }[];
         } & {
             id: string;
             createdAt: Date;
-            notes: string | null;
+            menuItemId: string;
             quantity: number;
+            notes: string | null;
             unitPrice: number;
             orderId: string;
-            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -145,14 +159,21 @@ export declare class OrdersController {
                 available: boolean;
                 imageUrl: string | null;
             };
+            modifiers: {
+                id: string;
+                name: string;
+                priceAdjustment: number;
+                modifierId: string;
+                orderItemId: string;
+            }[];
         } & {
             id: string;
             createdAt: Date;
-            notes: string | null;
+            menuItemId: string;
             quantity: number;
+            notes: string | null;
             unitPrice: number;
             orderId: string;
-            menuItemId: string;
         })[];
         table: {
             id: string;
@@ -201,14 +222,21 @@ export declare class OrdersController {
                 available: boolean;
                 imageUrl: string | null;
             };
+            modifiers: {
+                id: string;
+                name: string;
+                priceAdjustment: number;
+                modifierId: string;
+                orderItemId: string;
+            }[];
         } & {
             id: string;
             createdAt: Date;
-            notes: string | null;
+            menuItemId: string;
             quantity: number;
+            notes: string | null;
             unitPrice: number;
             orderId: string;
-            menuItemId: string;
         })[];
         table: {
             id: string;

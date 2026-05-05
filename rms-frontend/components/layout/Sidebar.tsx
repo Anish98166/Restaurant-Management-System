@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ShoppingBag, UtensilsCrossed,
-  Table2, CreditCard, Settings, LogOut, ChefHat, Shield,
+  Table2, CreditCard, Settings, LogOut, ChefHat, Shield, Package, ChefHat as KdsIcon, CalendarCheck,
 } from 'lucide-react';
 import { useLogout, useCurrentUser } from '@/hooks/useAuth';
 import { can } from '@/lib/permissions';
@@ -14,6 +14,7 @@ interface NavItem {
   icon: React.ElementType;
   adminOnly?: boolean;
   badge?: string;
+  external?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -22,6 +23,8 @@ const navItems: NavItem[] = [
   { href: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { href: '/tables', label: 'Tables', icon: Table2 },
   { href: '/billing', label: 'Billing', icon: CreditCard },
+  { href: '/inventory', label: 'Inventory', icon: Package, adminOnly: true },
+  { href: '/shift-report', label: 'Shift Report', icon: CalendarCheck, adminOnly: true },
   { href: '/settings', label: 'Settings', icon: Settings, adminOnly: true },
 ];
 
@@ -110,6 +113,15 @@ export function Sidebar() {
           <LogOut className="w-5 h-5" />
           Sign Out
         </button>
+        <a
+          href="/kitchen"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-[#BCAAA4] hover:bg-[#6D4C41] hover:text-white transition-all duration-200"
+        >
+          <KdsIcon className="w-5 h-5" />
+          Kitchen Display ↗
+        </a>
       </div>
     </aside>
   );

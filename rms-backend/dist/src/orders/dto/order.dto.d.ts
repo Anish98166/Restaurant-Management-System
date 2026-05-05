@@ -1,8 +1,12 @@
 import { OrderStatus } from '@prisma/client';
+export declare class OrderItemModifierDto {
+    modifierId: string;
+}
 export declare class OrderItemDto {
     menuItemId: string;
     quantity: number;
     notes?: string;
+    modifiers?: OrderItemModifierDto[];
 }
 export declare class CreateOrderDto {
     tableId: string;

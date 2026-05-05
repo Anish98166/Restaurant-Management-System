@@ -13,7 +13,12 @@ export interface OrderFilters {
 export interface CreateOrderData {
   tableId: string;
   notes?: string;
-  items: Array<{ menuItemId: string; quantity: number; notes?: string }>;
+  items: Array<{
+    menuItemId: string;
+    quantity: number;
+    notes?: string;
+    modifiers?: Array<{ modifierId: string }>;
+  }>;
 }
 
 export const ordersService = {

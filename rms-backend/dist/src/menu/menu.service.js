@@ -17,6 +17,10 @@ let MenuService = class MenuService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    menuInclude = {
+        inventoryItem: true,
+        modifierGroups: { include: { modifiers: { orderBy: { name: 'asc' } } }, orderBy: { name: 'asc' } },
+    };
     async findAll(query) {
         const { category, available, search, page = 1, limit = 20 } = query;
         const skip = (Number(page) - 1) * Number(limit);
@@ -33,6 +37,7 @@ let MenuService = class MenuService {
                 skip,
                 take: Number(limit),
                 orderBy: { createdAt: 'desc' },
+                include: this.menuInclude,
             }),
             this.prisma.menuItem.count({ where }),
         ]);
@@ -42,17 +47,20 @@ let MenuService = class MenuService {
         };
     }
     async findOne(id) {
-        const item = await this.prisma.menuItem.findUnique({ where: { id } });
+        const item = await this.prisma.menuItem.findUnique({
+            where: { id },
+            include: this.menuInclude,
+        });
         if (!item)
             throw new common_1.NotFoundException(`Menu item ${id} not found`);
         return item;
     }
     async create(dto) {
-        return this.prisma.menuItem.create({ data: dto });
+        return this.prisma.menuItem.create({ data: dto, include: this.menuInclude });
     }
     async update(id, dto) {
         await this.findOne(id);
-        return this.prisma.menuItem.update({ where: { id }, data: dto });
+        return this.prisma.menuItem.update({ where: { id }, data: dto, include: this.menuInclude });
     }
     async remove(id) {
         await this.findOne(id);
@@ -63,6 +71,7 @@ let MenuService = class MenuService {
         return this.prisma.menuItem.update({
             where: { id },
             data: { available: !item.available },
+            include: this.menuInclude,
         });
     }
 };

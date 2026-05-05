@@ -2,15 +2,16 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto, UpdateOrderStatusDto, OrderQueryDto } from './dto/order.dto';
 import { OrderStatus, TableStatus } from '@prisma/client';
+import { InventoryService } from '../inventory/inventory.service';
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private inventoryService: InventoryService) {}
 
   private orderInclude = {
     table: true,
     staff: { select: { id: true, name: true, email: true, role: true } },
-    items: { include: { menuItem: true } },
+    items: { include: { menuItem: true, modifiers: true } },
     payment: true,
   };
 
@@ -72,9 +73,19 @@ export class OrdersService {
       throw new BadRequestException(`Items not available: ${unavailable.map((m) => m.name).join(', ')}`);
     }
 
+    // Fetch all selected modifiers
+    const allModifierIds = dto.items.flatMap((i) => (i.modifiers ?? []).map((m) => m.modifierId));
+    const allModifiers = allModifierIds.length
+      ? await this.prisma.modifier.findMany({ where: { id: { in: allModifierIds } } })
+      : [];
+
     const totalAmount = dto.items.reduce((sum, item) => {
       const menuItem = menuItems.find((m) => m.id === item.menuItemId)!;
-      return sum + menuItem.price * item.quantity;
+      const modifierTotal = (item.modifiers ?? []).reduce((ms, mod) => {
+        const modifier = allModifiers.find((m) => m.id === mod.modifierId);
+        return ms + (modifier?.priceAdjustment ?? 0);
+      }, 0);
+      return sum + (menuItem.price + modifierTotal) * item.quantity;
     }, 0);
 
     const order = await this.prisma.order.create({
@@ -91,6 +102,18 @@ export class OrdersService {
               quantity: item.quantity,
               unitPrice: menuItem.price,
               notes: item.notes,
+              modifiers: (item.modifiers ?? []).length
+                ? {
+                    create: (item.modifiers ?? []).map((mod) => {
+                      const modifier = allModifiers.find((m) => m.id === mod.modifierId)!;
+                      return {
+                        modifierId: mod.modifierId,
+                        name: modifier?.name ?? '',
+                        priceAdjustment: modifier?.priceAdjustment ?? 0,
+                      };
+                    }),
+                  }
+                : undefined,
             };
           }),
         },
@@ -103,6 +126,11 @@ export class OrdersService {
       where: { id: dto.tableId },
       data: { status: TableStatus.OCCUPIED },
     });
+
+    // Deduct inventory stock
+    await this.inventoryService.deductStock(
+      dto.items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })),
+    );
 
     return order;
   }

@@ -29,11 +29,11 @@ export declare class DashboardService {
             } & {
                 id: string;
                 createdAt: Date;
-                notes: string | null;
+                menuItemId: string;
                 quantity: number;
+                notes: string | null;
                 unitPrice: number;
                 orderId: string;
-                menuItemId: string;
             })[];
             table: {
                 id: string;
@@ -105,11 +105,11 @@ export declare class DashboardService {
             } & {
                 id: string;
                 createdAt: Date;
-                notes: string | null;
+                menuItemId: string;
                 quantity: number;
+                notes: string | null;
                 unitPrice: number;
                 orderId: string;
-                menuItemId: string;
             })[];
             table: {
                 id: string;
