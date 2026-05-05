@@ -220,6 +220,15 @@ export function CreateOrderModal({ isOpen, onClose }: CreateOrderModalProps) {
                           </p>
                         </div>
                         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          {item.inventoryItem && (
+                            <span className={`text-xs font-medium ${
+                              item.inventoryItem.quantity <= item.inventoryItem.lowStockThreshold
+                                ? 'text-orange-500'
+                                : 'text-green-600'
+                            }`}>
+                              {item.inventoryItem.quantity} left
+                            </span>
+                          )}
                           <span className="font-semibold text-[#FF8A65] text-sm">
                             ${item.price.toFixed(2)}
                           </span>
