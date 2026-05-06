@@ -17,6 +17,9 @@ import { ReportsModule } from './reports/reports.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { UsersModule } from './users/users.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { LocationsModule } from './locations/locations.module';
+import { PrintModule } from './print/print.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
     FeedbackModule,
     UsersModule,
     LoyaltyModule,
+    SuppliersModule,
+    LocationsModule,
+    PrintModule,
   ],
 })
 export class AppModule {}

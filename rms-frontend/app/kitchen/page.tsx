@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { ChefHat, Clock, CheckCircle, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import { useKdsOrders, useBumpOrder } from '@/hooks/useKds';
+import { PrintButton } from '@/components/ui/PrintButton';
 import { Order, OrderStatus } from '@/types';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; border: string; text: string; badge: string }> = {
@@ -89,7 +90,8 @@ function OrderCard({ order, onBump, bumping }: { order: Order; onBump: () => voi
       </div>
 
       {/* Bump button */}
-      <div className="px-4 pb-4 pt-2">
+      <div className="px-4 pb-4 pt-2 space-y-2">
+        <PrintButton type="order" id={order.id} label="Print Ticket" className="w-full justify-center" />
         <button
           onClick={onBump}
           disabled={bumping}

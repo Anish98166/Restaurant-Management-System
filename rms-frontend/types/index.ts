@@ -272,3 +272,89 @@ export interface DailyReport {
   closedAt: string;
   closedById: string;
 }
+
+export type PurchaseOrderStatus = 'DRAFT' | 'SENT' | 'RECEIVED' | 'CANCELLED';
+
+export interface Location {
+  id: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  timezone: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LocationAnalytics {
+  location: Location;
+  totalOrders: number;
+  todayOrders: number;
+  activeOrders: number;
+  totalRevenue: number;
+  todayRevenue: number;
+  tables: number;
+}
+
+export interface CrossLocationAnalytics {
+  locations: LocationAnalytics[];
+  unassigned: { totalOrders: number; totalRevenue: number };
+  totals: { orders: number; revenue: number };
+}
+
+export interface SupplierItem {
+  id: string;
+  supplierId: string;
+  inventoryItemId: string;
+  unitCost: number;
+  inventoryItem: {
+    id: string;
+    unit: string;
+    quantity: number;
+    menuItem: { name: string };
+  };
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  notes?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  supplierItems?: SupplierItem[];
+  _count?: { purchaseOrders: number; supplierItems: number };
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchaseOrderId: string;
+  inventoryItemId: string;
+  quantity: number;
+  unitCost: number;
+  received: number;
+  inventoryItem: {
+    id: string;
+    unit: string;
+    menuItem: { name: string };
+  };
+}
+
+export interface PurchaseOrder {
+  id: string;
+  supplierId: string;
+  supplier: { id: string; name: string };
+  status: PurchaseOrderStatus;
+  notes?: string;
+  totalCost: number;
+  orderedAt?: string;
+  receivedAt?: string;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  items: PurchaseOrderItem[];
+}

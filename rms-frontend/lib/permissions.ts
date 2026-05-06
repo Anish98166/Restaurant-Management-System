@@ -57,6 +57,15 @@ export const can = {
 
   // Loyalty
   viewLoyalty: (user: User | null) => user?.role === 'ADMIN',
+
+  // Suppliers & Purchase Orders
+  manageSuppliers: (user: User | null) => user?.role === 'ADMIN',
+
+  // Locations
+  manageLocations: (user: User | null) => user?.role === 'ADMIN',
+
+  // Print
+  printTickets: (user: User | null) => !!user,
 } as const;
 
 export function isAdmin(user: User | null): boolean {
