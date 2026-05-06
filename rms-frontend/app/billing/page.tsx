@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { PaymentModal } from '@/components/billing/PaymentModal';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PrintButton } from '@/components/ui/PrintButton';
 import { OrderStatusBadge, PaymentStatusBadge } from '@/components/ui/Badge';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { useUnpaidOrders, usePayments } from '@/hooks/usePayments';
@@ -141,14 +142,13 @@ export default function BillingPage() {
                         {format(new Date(payment.createdAt), 'MMM d, HH:mm')}
                       </td>
                       <td className="px-4 py-3">
-                        <a
-                          href={`/receipt/${payment.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-xs text-[#FF8A65] hover:text-[#FF7043] font-medium transition-colors"
-                        >
-                          <Receipt className="w-3.5 h-3.5" /> View
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a href={`/receipt/${payment.id}`} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-[#FF8A65] hover:text-[#FF7043] font-medium transition-colors">
+                            <Receipt className="w-3.5 h-3.5" /> View
+                          </a>
+                          <PrintButton type="receipt" id={payment.id} />
+                        </div>
                       </td>
                     </tr>
                   ))}

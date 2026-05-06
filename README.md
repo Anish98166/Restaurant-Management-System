@@ -125,6 +125,7 @@ Frontend runs at **http://localhost:3000**
 - Color-coded order cards: 🔴 New (PENDING) · 🟡 Preparing · 🟢 Ready (SERVED)
 - Live elapsed time ticker per order; urgent pulse animation after 5 minutes
 - One-click **Bump** button advances each order to the next status
+- **Print Ticket** button on every card — opens a formatted kitchen ticket in a print dialog
 - Sound alert (Web Audio API) on new incoming orders — mutable toggle
 - Auto-polls every 8 seconds
 
@@ -158,7 +159,31 @@ Frontend runs at **http://localhost:3000**
 - Payment method, timestamp, table number, and staff name
 - QR code on the receipt links back to itself for easy resharing
 - Print button for physical copy
-- Accessible from the Billing page payment history table
+
+### Printer / POS Integration
+- **Print Ticket** button on every KDS order card — opens a formatted kitchen ticket in a browser print dialog
+- **Print Receipt** button in the Billing payment history — opens a formatted receipt for printing
+- Backend generates both plain-text (ESC/POS compatible) and HTML versions of tickets
+- `GET /api/print/order/:id/html` — printable kitchen ticket HTML
+- `GET /api/print/receipt/:paymentId/html` — printable receipt HTML
+- `GET /api/print/order/:id` — raw ESC/POS text for network printer integration
+- Works with any browser-connected printer; no driver installation required
+
+### Suppliers & Purchase Orders — `/suppliers` *(Admin only)*
+- Manage a list of suppliers with contact name, phone, email, and address
+- Link inventory items to suppliers with per-item unit cost
+- **Create Purchase Orders** — select supplier, add items with quantities and unit costs, estimated total shown live
+- PO status flow: Draft → Sent → Received (or Cancelled)
+- **Receive PO** — marks the order received and automatically restocks all inventory items
+- Full purchase order history with expandable detail view
+
+### Multi-Location Support — `/locations` *(Admin only)*
+- Create and manage multiple restaurant locations (name, address, phone, timezone)
+- Activate / deactivate locations without deleting them
+- `locationId` field on Orders, Tables, and Users — assign resources to specific locations
+- **Cross-location analytics dashboard** — per-location breakdown of orders, revenue, active orders, and table count
+- Totals row aggregates all locations plus unassigned records
+- Existing data is unaffected (null `locationId` = unassigned / main location)
 
 ### Staff & User Management — `/staff` *(Admin only)*
 - Full user table: name, email, role, phone, order count, last login, active status
@@ -167,23 +192,20 @@ Frontend runs at **http://localhost:3000**
 - **Change Password** for any user
 - **Deactivate / Reactivate** accounts without deleting them
 - **Activity Log** per user — tracks account creation, updates, password changes, deactivation
-- Stats: total users, active count, admins, staff
 
 ### Loyalty Programme — `/loyalty` *(Admin only)*
 - Customers earn loyalty points by providing their phone number when ordering via QR
 - Visit count and total spend tracked per customer
-- Free item awarded automatically every 5 visits (configurable)
+- Free item awarded automatically every 5 visits
 - Progress bar shows how close each customer is to their next free item
 - **Redeem** button marks the free item as used
 - Summary stats: total members, free items pending, loyalty revenue, average visits
-- Search by name, phone, or email
 
 ### Inventory Management — `/inventory` *(Admin only)*
 - Track stock levels per menu item with unit and low-stock threshold
 - **Restock** — add quantity to current stock
 - **Set Stock** — override to an exact quantity for manual corrections
 - Stats cards: total tracked / in stock / low stock / out of stock
-- Orange alert banner when items need attention
 - Stock hits 0 → menu item auto-marked unavailable; restocked above 0 → auto re-enabled
 - Stock deducted automatically on every order (staff-placed and QR)
 
@@ -210,45 +232,53 @@ Frontend runs at **http://localhost:3000**
 ### Billing
 - Unpaid orders alert panel
 - Process payments (Cash / Card / Online)
-- Full payment history with **View Receipt** link per payment (Admin only)
+- Full payment history with **View Receipt** link and **Print Receipt** button per payment (Admin only)
 - Refund support
 
 ---
 
 ## Role-Based Access
 
-| Feature                  | Admin | Staff        |
-|--------------------------|-------|--------------|
-| Dashboard analytics      | Full  | Summary only |
-| Menu CRUD + Modifiers    | ✅    | View only    |
-| Kitchen Display (KDS)    | ✅    | ✅           |
-| Reservations             | ✅    | ✅           |
-| Inventory management     | ✅    | —            |
-| Staff management         | ✅    | —            |
-| Loyalty programme        | ✅    | —            |
-| Shift / Daily Report     | ✅    | —            |
-| Reports & Export         | ✅    | —            |
-| Customer Feedback        | ✅    | —            |
-| Table management         | ✅    | Status only  |
-| Orders                   | ✅    | ✅           |
-| Billing                  | ✅    | Process only |
-| Settings                 | ✅    | —            |
+| Feature                      | Admin | Staff        |
+|------------------------------|-------|--------------|
+| Dashboard analytics          | Full  | Summary only |
+| Menu CRUD + Modifiers        | ✅    | View only    |
+| Kitchen Display (KDS)        | ✅    | ✅           |
+| Print kitchen tickets        | ✅    | ✅           |
+| Reservations                 | ✅    | ✅           |
+| Inventory management         | ✅    | —            |
+| Suppliers & Purchase Orders  | ✅    | —            |
+| Multi-Location management    | ✅    | —            |
+| Staff management             | ✅    | —            |
+| Loyalty programme            | ✅    | —            |
+| Shift / Daily Report         | ✅    | —            |
+| Reports & Export             | ✅    | —            |
+| Customer Feedback            | ✅    | —            |
+| Table management             | ✅    | Status only  |
+| Orders                       | ✅    | ✅           |
+| Billing                      | ✅    | Process only |
+| Settings                     | ✅    | —            |
 
 ---
 
 ## Data Model
 
 ```
-User              — id, email, name, password, role, active, phone, lastLoginAt
+User              — id, email, name, password, role, active, phone, lastLoginAt, locationId
 ActivityLog       — id, userId, action, details, createdAt
+Location          — id, name, address, phone, timezone, active
 MenuItem          — id, name, description, price, category, available, imageUrl
 ModifierGroup     — id, menuItemId (N:1), name, required, multiSelect
 Modifier          — id, modifierGroupId (N:1), name, priceAdjustment, available
 InventoryItem     — id, menuItemId (1:1), quantity, unit, lowStockThreshold, lastRestockedAt
-RestaurantTable   — id, tableNumber, capacity, status
+Supplier          — id, name, contactName, phone, email, address, notes, active
+SupplierItem      — id, supplierId, inventoryItemId, unitCost
+PurchaseOrder     — id, supplierId, status, notes, totalCost, orderedAt, receivedAt, createdById
+PurchaseOrderItem — id, purchaseOrderId, inventoryItemId, quantity, unitCost, received
+RestaurantTable   — id, tableNumber, capacity, status, locationId
 Reservation       — id, tableId, guestName, phone, partySize, date, time, notes, status, createdById
 LoyaltyCustomer   — id, phone (unique), email, name, visitCount, totalSpend, freeItemEarned, freeItemUsed
-Order             — id, orderNumber, status, totalAmount, tableId, staffId, loyaltyCustomerId, notes
+Order             — id, orderNumber, status, totalAmount, tableId, staffId, loyaltyCustomerId, locationId, notes
 OrderItem         — id, orderId, menuItemId, quantity, unitPrice, notes
 OrderItemModifier — id, orderItemId, modifierId, name, priceAdjustment
 Payment           — id, orderId (1:1), amount, method, status
@@ -261,23 +291,33 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 ## API Endpoints
 
 ### Auth
-| Method | Path               | Auth | Description           |
-|--------|--------------------|------|-----------------------|
-| POST   | /api/auth/register | Admin| Register user         |
-| POST   | /api/auth/login    | —    | Login                 |
-| GET    | /api/auth/me       | JWT  | Current user profile  |
+| Method | Path               | Auth  | Description           |
+|--------|--------------------|-------|-----------------------|
+| POST   | /api/auth/register | Admin | Register user         |
+| POST   | /api/auth/login    | —     | Login                 |
+| GET    | /api/auth/me       | JWT   | Current user profile  |
 
 ### Users *(Admin only)*
-| Method | Path                       | Description                    |
-|--------|----------------------------|--------------------------------|
-| GET    | /api/users                 | List all users                 |
-| GET    | /api/users/activity-logs   | Get activity logs              |
-| GET    | /api/users/:id             | Get single user                |
-| POST   | /api/users                 | Create user                    |
-| PUT    | /api/users/:id             | Update user                    |
-| PATCH  | /api/users/:id/password    | Change user password           |
-| PATCH  | /api/users/:id/deactivate  | Deactivate user account        |
-| PATCH  | /api/users/:id/activate    | Reactivate user account        |
+| Method | Path                      | Description               |
+|--------|---------------------------|---------------------------|
+| GET    | /api/users                | List all users            |
+| GET    | /api/users/activity-logs  | Get activity logs         |
+| GET    | /api/users/:id            | Get single user           |
+| POST   | /api/users                | Create user               |
+| PUT    | /api/users/:id            | Update user               |
+| PATCH  | /api/users/:id/password   | Change user password      |
+| PATCH  | /api/users/:id/deactivate | Deactivate user account   |
+| PATCH  | /api/users/:id/activate   | Reactivate user account   |
+
+### Locations *(Admin only)*
+| Method | Path                    | Description                     |
+|--------|-------------------------|---------------------------------|
+| GET    | /api/locations          | List all locations              |
+| GET    | /api/locations/analytics| Cross-location analytics        |
+| GET    | /api/locations/:id      | Get single location             |
+| POST   | /api/locations          | Create location                 |
+| PUT    | /api/locations/:id      | Update location                 |
+| DELETE | /api/locations/:id      | Delete location                 |
 
 ### Menu
 | Method | Path                                                     | Auth  | Description                  |
@@ -333,6 +373,14 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | GET    | /api/kds/active   | JWT  | Get active kitchen orders |
 | PATCH  | /api/kds/:id/bump | JWT  | Bump order to next status |
 
+### Print
+| Method | Path                           | Auth | Description                        |
+|--------|--------------------------------|------|------------------------------------|
+| GET    | /api/print/order/:id           | JWT  | Kitchen ticket (JSON + text + HTML)|
+| GET    | /api/print/order/:id/html      | JWT  | Kitchen ticket as printable HTML   |
+| GET    | /api/print/receipt/:id         | JWT  | Receipt ticket (JSON + text + HTML)|
+| GET    | /api/print/receipt/:id/html    | JWT  | Receipt as printable HTML          |
+
 ### Payments
 | Method | Path                        | Auth  | Description           |
 |--------|-----------------------------|-------|-----------------------|
@@ -341,6 +389,23 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | GET    | /api/payments/unpaid-orders | JWT   | Get unpaid orders     |
 | POST   | /api/payments               | JWT   | Process payment       |
 | PATCH  | /api/payments/:id/status    | Admin | Update payment status |
+
+### Suppliers & Purchase Orders *(Admin only)*
+| Method | Path                                    | Description                          |
+|--------|-----------------------------------------|--------------------------------------|
+| GET    | /api/suppliers                          | List all suppliers                   |
+| GET    | /api/suppliers/:id                      | Get supplier with items + PO history |
+| POST   | /api/suppliers                          | Create supplier                      |
+| PUT    | /api/suppliers/:id                      | Update supplier                      |
+| DELETE | /api/suppliers/:id                      | Delete supplier                      |
+| POST   | /api/suppliers/:id/items                | Link inventory item to supplier      |
+| DELETE | /api/suppliers/:id/items/:invItemId     | Unlink inventory item                |
+| GET    | /api/suppliers/purchase-orders/all      | List all purchase orders             |
+| GET    | /api/suppliers/purchase-orders/:id      | Get single purchase order            |
+| POST   | /api/suppliers/purchase-orders          | Create purchase order                |
+| PATCH  | /api/suppliers/purchase-orders/:id/status | Update PO status (sent/cancelled)  |
+| POST   | /api/suppliers/purchase-orders/:id/receive | Receive PO → auto-restock        |
+| DELETE | /api/suppliers/purchase-orders/:id      | Delete purchase order                |
 
 ### Inventory *(Admin only)*
 | Method | Path                       | Description                |
@@ -355,22 +420,22 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | DELETE | /api/inventory/:id         | Stop tracking              |
 
 ### Loyalty *(Admin only)*
-| Method | Path                  | Description                        |
-|--------|-----------------------|------------------------------------|
-| GET    | /api/loyalty          | List all loyalty customers         |
-| GET    | /api/loyalty/summary  | Programme summary stats            |
-| GET    | /api/loyalty/lookup   | Look up customer by phone          |
-| GET    | /api/loyalty/:id      | Get customer detail + order history|
-| PATCH  | /api/loyalty/:id/redeem | Redeem free item for customer    |
+| Method | Path                    | Description                         |
+|--------|-------------------------|-------------------------------------|
+| GET    | /api/loyalty            | List all loyalty customers          |
+| GET    | /api/loyalty/summary    | Programme summary stats             |
+| GET    | /api/loyalty/lookup     | Look up customer by phone           |
+| GET    | /api/loyalty/:id        | Get customer detail + order history |
+| PATCH  | /api/loyalty/:id/redeem | Redeem free item for customer       |
 
 ### Reports *(Admin only)*
-| Method | Path                         | Description                        |
-|--------|------------------------------|------------------------------------|
-| GET    | /api/reports/revenue         | Revenue report for a date range    |
-| GET    | /api/reports/items           | Best/worst selling items           |
-| GET    | /api/reports/staff           | Staff performance report           |
-| GET    | /api/reports/export/orders   | Export orders as CSV               |
-| GET    | /api/reports/export/payments | Export payments as CSV             |
+| Method | Path                         | Description                     |
+|--------|------------------------------|---------------------------------|
+| GET    | /api/reports/revenue         | Revenue report for a date range |
+| GET    | /api/reports/items           | Best/worst selling items        |
+| GET    | /api/reports/staff           | Staff performance report        |
+| GET    | /api/reports/export/orders   | Export orders as CSV            |
+| GET    | /api/reports/export/payments | Export payments as CSV          |
 
 ### Shift Report *(Admin only)*
 | Method | Path                          | Description                      |
@@ -381,13 +446,13 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | POST   | /api/shift-report/close       | Close the day and archive report |
 
 ### Feedback
-| Method | Path                       | Auth  | Description                        |
-|--------|----------------------------|-------|------------------------------------|
-| POST   | /api/feedback              | —     | Submit feedback (public, no auth)  |
-| GET    | /api/feedback              | Admin | Get all feedback                   |
-| GET    | /api/feedback/summary      | Admin | Rating summary + distribution      |
-| GET    | /api/feedback/menu-ratings | Admin | Average ratings per menu item      |
-| DELETE | /api/feedback/:id          | Admin | Delete a review                    |
+| Method | Path                       | Auth  | Description                       |
+|--------|----------------------------|-------|-----------------------------------|
+| POST   | /api/feedback              | —     | Submit feedback (public, no auth) |
+| GET    | /api/feedback              | Admin | Get all feedback                  |
+| GET    | /api/feedback/summary      | Admin | Rating summary + distribution     |
+| GET    | /api/feedback/menu-ratings | Admin | Average ratings per menu item     |
+| DELETE | /api/feedback/:id          | Admin | Delete a review                   |
 
 ### Dashboard
 | Method | Path                         | Auth  | Description        |
