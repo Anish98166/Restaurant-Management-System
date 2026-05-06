@@ -15,6 +15,8 @@ import { ShiftReportModule } from './shift-report/shift-report.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ReportsModule } from './reports/reports.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { UsersModule } from './users/users.module';
+import { LoyaltyModule } from './loyalty/loyalty.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { FeedbackModule } from './feedback/feedback.module';
     ReservationsModule,
     ReportsModule,
     FeedbackModule,
+    UsersModule,
+    LoyaltyModule,
   ],
 })
 export class AppModule {}

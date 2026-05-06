@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, ShoppingBag, UtensilsCrossed,
   Table2, CreditCard, Settings, LogOut, ChefHat, Shield,
-  Package, CalendarCheck, BookOpen, BarChart2, Star, ChefHat as KdsIcon,
+  Package, CalendarCheck, BookOpen, BarChart2, Star, Users, Gift,
+  ChefHat as KdsIcon,
 } from 'lucide-react';
 import { useLogout, useCurrentUser } from '@/hooks/useAuth';
 import { can } from '@/lib/permissions';
@@ -26,6 +27,8 @@ const navItems: NavItem[] = [
   { href: '/reservations', label: 'Reservations', icon: BookOpen },
   { href: '/billing', label: 'Billing', icon: CreditCard },
   { href: '/inventory', label: 'Inventory', icon: Package, adminOnly: true },
+  { href: '/staff', label: 'Staff', icon: Users, adminOnly: true },
+  { href: '/loyalty', label: 'Loyalty', icon: Gift, adminOnly: true },
   { href: '/shift-report', label: 'Shift Report', icon: CalendarCheck, adminOnly: true },
   { href: '/reports', label: 'Reports', icon: BarChart2, adminOnly: true },
   { href: '/feedback', label: 'Feedback', icon: Star, adminOnly: true },

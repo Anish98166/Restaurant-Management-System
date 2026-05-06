@@ -63,6 +63,8 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<MenuCategory | 'ALL'>('ALL');
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -142,6 +144,8 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
       const res = await axios.post(`${API_BASE}/public/orders`, {
         tableId,
         customerName: customerName.trim() || undefined,
+        phone: customerPhone.trim() || undefined,
+        email: customerEmail.trim() || undefined,
         notes: notes.trim() || undefined,
         items: cart.map((c) => ({
           menuItemId: c.menuItem.id,
@@ -507,6 +511,19 @@ export default function CustomerMenuPage({ params }: { params: Promise<{ tableId
                       placeholder="e.g. John"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
+                    />
+                    <Input
+                      label="Phone (optional — earn loyalty points)"
+                      placeholder="+1234567890"
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                    />
+                    <Input
+                      label="Email (optional)"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
                     />
                     <Input
                       label="Special Requests (optional)"

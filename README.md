@@ -31,7 +31,7 @@ Restaurant-Management-System/
 - **Recharts** — revenue and order analytics charts
 - **Tailwind CSS v4** — warm restaurant-style design system
 - **Axios** — HTTP client with JWT interceptors
-- **qrcode.react** — QR code generation for table ordering
+- **qrcode.react** — QR code generation for table ordering and receipts
 - **date-fns** — date formatting and manipulation
 
 ---
@@ -141,16 +141,42 @@ Frontend runs at **http://localhost:3000**
 - Status flow: Confirmed → Seated → Completed (or Cancelled / No Show)
 - Seating a guest auto-marks the table Occupied; completing/cancelling auto-frees it
 - **Process No-Shows** button marks overdue confirmed reservations automatically
-- Create and edit modals with date/time pickers and table selector
 
 ### QR Customer Ordering — `/menu/[tableId]`
 - Public page — no login required for customers
 - Customers browse the full menu with category tabs and search
-- Add items to cart, select modifiers, enter name and special requests, place order
+- Add items to cart, select modifiers, enter name, phone, email, and special requests
+- Phone number enrolls the customer in the **Loyalty Programme** automatically
 - Order appears instantly in the staff orders list and KDS, tagged as `(QR Order)`
 - Table is automatically marked Occupied; stock is deducted from inventory
 - **Feedback form** shown immediately after order is placed — 1–5 star rating + optional comment
 - QR codes can be downloaded as SVG for printing
+
+### Digital Receipt — `/receipt/[paymentId]`
+- Public page — no login required, accessible via direct URL or QR code
+- Itemised bill with item names, modifiers, quantities, and line totals
+- Payment method, timestamp, table number, and staff name
+- QR code on the receipt links back to itself for easy resharing
+- Print button for physical copy
+- Accessible from the Billing page payment history table
+
+### Staff & User Management — `/staff` *(Admin only)*
+- Full user table: name, email, role, phone, order count, last login, active status
+- **Create** new staff or admin accounts directly from the UI
+- **Edit** name, email, role, and phone
+- **Change Password** for any user
+- **Deactivate / Reactivate** accounts without deleting them
+- **Activity Log** per user — tracks account creation, updates, password changes, deactivation
+- Stats: total users, active count, admins, staff
+
+### Loyalty Programme — `/loyalty` *(Admin only)*
+- Customers earn loyalty points by providing their phone number when ordering via QR
+- Visit count and total spend tracked per customer
+- Free item awarded automatically every 5 visits (configurable)
+- Progress bar shows how close each customer is to their next free item
+- **Redeem** button marks the free item as used
+- Summary stats: total members, free items pending, loyalty revenue, average visits
+- Search by name, phone, or email
 
 ### Inventory Management — `/inventory` *(Admin only)*
 - Track stock levels per menu item with unit and low-stock threshold
@@ -173,10 +199,10 @@ Frontend runs at **http://localhost:3000**
 - **Revenue tab** — total revenue, payment method breakdown, daily area chart
 - **Menu Items tab** — top 10 best sellers and worst sellers by quantity + revenue
 - **Staff Performance tab** — per-staff order counts, completion rate, revenue generated
-- **CSV export** — download orders or payments for any date range (opens with JWT auth)
+- **CSV export** — download orders or payments for any date range
 
 ### Customer Feedback — `/feedback` *(Admin only)*
-- Aggregate summary: total reviews, average rating, star distribution bar chart
+- Aggregate summary: total reviews, average rating, star distribution
 - Per-menu-item average ratings ranked by score
 - Full review feed with customer name, order number, table, comment, and timestamp
 - Admin can delete individual reviews
@@ -184,7 +210,7 @@ Frontend runs at **http://localhost:3000**
 ### Billing
 - Unpaid orders alert panel
 - Process payments (Cash / Card / Online)
-- Full payment history (Admin only)
+- Full payment history with **View Receipt** link per payment (Admin only)
 - Refund support
 
 ---
@@ -198,6 +224,8 @@ Frontend runs at **http://localhost:3000**
 | Kitchen Display (KDS)    | ✅    | ✅           |
 | Reservations             | ✅    | ✅           |
 | Inventory management     | ✅    | —            |
+| Staff management         | ✅    | —            |
+| Loyalty programme        | ✅    | —            |
 | Shift / Daily Report     | ✅    | —            |
 | Reports & Export         | ✅    | —            |
 | Customer Feedback        | ✅    | —            |
@@ -211,14 +239,16 @@ Frontend runs at **http://localhost:3000**
 ## Data Model
 
 ```
-User              — id, email, name, password, role (ADMIN | STAFF)
+User              — id, email, name, password, role, active, phone, lastLoginAt
+ActivityLog       — id, userId, action, details, createdAt
 MenuItem          — id, name, description, price, category, available, imageUrl
 ModifierGroup     — id, menuItemId (N:1), name, required, multiSelect
 Modifier          — id, modifierGroupId (N:1), name, priceAdjustment, available
 InventoryItem     — id, menuItemId (1:1), quantity, unit, lowStockThreshold, lastRestockedAt
 RestaurantTable   — id, tableNumber, capacity, status
 Reservation       — id, tableId, guestName, phone, partySize, date, time, notes, status, createdById
-Order             — id, orderNumber, status, totalAmount, tableId, staffId, notes
+LoyaltyCustomer   — id, phone (unique), email, name, visitCount, totalSpend, freeItemEarned, freeItemUsed
+Order             — id, orderNumber, status, totalAmount, tableId, staffId, loyaltyCustomerId, notes
 OrderItem         — id, orderId, menuItemId, quantity, unitPrice, notes
 OrderItemModifier — id, orderItemId, modifierId, name, priceAdjustment
 Payment           — id, orderId (1:1), amount, method, status
@@ -233,9 +263,21 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 ### Auth
 | Method | Path               | Auth | Description           |
 |--------|--------------------|------|-----------------------|
-| POST   | /api/auth/register | —    | Register user         |
+| POST   | /api/auth/register | Admin| Register user         |
 | POST   | /api/auth/login    | —    | Login                 |
 | GET    | /api/auth/me       | JWT  | Current user profile  |
+
+### Users *(Admin only)*
+| Method | Path                       | Description                    |
+|--------|----------------------------|--------------------------------|
+| GET    | /api/users                 | List all users                 |
+| GET    | /api/users/activity-logs   | Get activity logs              |
+| GET    | /api/users/:id             | Get single user                |
+| POST   | /api/users                 | Create user                    |
+| PUT    | /api/users/:id             | Update user                    |
+| PATCH  | /api/users/:id/password    | Change user password           |
+| PATCH  | /api/users/:id/deactivate  | Deactivate user account        |
+| PATCH  | /api/users/:id/activate    | Reactivate user account        |
 
 ### Menu
 | Method | Path                                                     | Auth  | Description                  |
@@ -265,16 +307,16 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | DELETE | /api/tables/:id        | Admin | Delete table        |
 
 ### Reservations
-| Method | Path                                | Auth  | Description                          |
-|--------|-------------------------------------|-------|--------------------------------------|
-| GET    | /api/reservations                   | JWT   | List reservations (filterable)       |
-| GET    | /api/reservations/upcoming          | JWT   | Get upcoming confirmed reservations  |
-| GET    | /api/reservations/:id               | JWT   | Get single reservation               |
-| POST   | /api/reservations                   | JWT   | Create reservation                   |
-| PUT    | /api/reservations/:id               | JWT   | Update reservation                   |
-| PATCH  | /api/reservations/:id/status        | JWT   | Update status (seat/cancel/no-show)  |
-| DELETE | /api/reservations/:id               | Admin | Delete reservation                   |
-| POST   | /api/reservations/process-no-shows  | Admin | Mark overdue reservations as no-show |
+| Method | Path                               | Auth  | Description                          |
+|--------|------------------------------------|-------|--------------------------------------|
+| GET    | /api/reservations                  | JWT   | List reservations (filterable)       |
+| GET    | /api/reservations/upcoming         | JWT   | Get upcoming confirmed reservations  |
+| GET    | /api/reservations/:id              | JWT   | Get single reservation               |
+| POST   | /api/reservations                  | JWT   | Create reservation                   |
+| PUT    | /api/reservations/:id              | JWT   | Update reservation                   |
+| PATCH  | /api/reservations/:id/status       | JWT   | Update status (seat/cancel/no-show)  |
+| DELETE | /api/reservations/:id              | Admin | Delete reservation                   |
+| POST   | /api/reservations/process-no-shows | Admin | Mark overdue reservations as no-show |
 
 ### Orders
 | Method | Path                   | Auth  | Description         |
@@ -312,14 +354,23 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | PATCH  | /api/inventory/:id/adjust  | Set exact stock quantity   |
 | DELETE | /api/inventory/:id         | Stop tracking              |
 
+### Loyalty *(Admin only)*
+| Method | Path                  | Description                        |
+|--------|-----------------------|------------------------------------|
+| GET    | /api/loyalty          | List all loyalty customers         |
+| GET    | /api/loyalty/summary  | Programme summary stats            |
+| GET    | /api/loyalty/lookup   | Look up customer by phone          |
+| GET    | /api/loyalty/:id      | Get customer detail + order history|
+| PATCH  | /api/loyalty/:id/redeem | Redeem free item for customer    |
+
 ### Reports *(Admin only)*
-| Method | Path                        | Description                        |
-|--------|-----------------------------|------------------------------------|
-| GET    | /api/reports/revenue        | Revenue report for a date range    |
-| GET    | /api/reports/items          | Best/worst selling items           |
-| GET    | /api/reports/staff          | Staff performance report           |
-| GET    | /api/reports/export/orders  | Export orders as CSV               |
-| GET    | /api/reports/export/payments| Export payments as CSV             |
+| Method | Path                         | Description                        |
+|--------|------------------------------|------------------------------------|
+| GET    | /api/reports/revenue         | Revenue report for a date range    |
+| GET    | /api/reports/items           | Best/worst selling items           |
+| GET    | /api/reports/staff           | Staff performance report           |
+| GET    | /api/reports/export/orders   | Export orders as CSV               |
+| GET    | /api/reports/export/payments | Export payments as CSV             |
 
 ### Shift Report *(Admin only)*
 | Method | Path                          | Description                      |
@@ -330,13 +381,13 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | POST   | /api/shift-report/close       | Close the day and archive report |
 
 ### Feedback
-| Method | Path                      | Auth  | Description                        |
-|--------|---------------------------|-------|------------------------------------|
-| POST   | /api/feedback             | —     | Submit feedback (public, no auth)  |
-| GET    | /api/feedback             | Admin | Get all feedback                   |
-| GET    | /api/feedback/summary     | Admin | Rating summary + distribution      |
-| GET    | /api/feedback/menu-ratings| Admin | Average ratings per menu item      |
-| DELETE | /api/feedback/:id         | Admin | Delete a review                    |
+| Method | Path                       | Auth  | Description                        |
+|--------|----------------------------|-------|------------------------------------|
+| POST   | /api/feedback              | —     | Submit feedback (public, no auth)  |
+| GET    | /api/feedback              | Admin | Get all feedback                   |
+| GET    | /api/feedback/summary      | Admin | Rating summary + distribution      |
+| GET    | /api/feedback/menu-ratings | Admin | Average ratings per menu item      |
+| DELETE | /api/feedback/:id          | Admin | Delete a review                    |
 
 ### Dashboard
 | Method | Path                         | Auth  | Description        |
@@ -344,12 +395,13 @@ DailyReport       — id, date (unique), totalOrders, revenue, topItemsJson, clo
 | GET    | /api/dashboard/analytics     | Admin | Full analytics     |
 | GET    | /api/dashboard/staff-summary | JWT   | Staff summary      |
 
-### Public *(no auth — for QR customer ordering)*
+### Public *(no auth — for QR customer ordering and receipts)*
 | Method | Path                        | Description                  |
 |--------|-----------------------------|------------------------------|
 | GET    | /api/public/menu            | Get available menu items     |
 | GET    | /api/public/tables/:tableId | Get table info               |
 | POST   | /api/public/orders          | Place order from QR scan     |
+| GET    | /api/public/receipt/:id     | Get digital receipt          |
 
 ---
 

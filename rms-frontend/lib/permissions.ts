@@ -51,6 +51,12 @@ export const can = {
 
   // Feedback
   viewFeedback: (user: User | null) => user?.role === 'ADMIN',
+
+  // Staff management
+  manageStaff: (user: User | null) => user?.role === 'ADMIN',
+
+  // Loyalty
+  viewLoyalty: (user: User | null) => user?.role === 'ADMIN',
 } as const;
 
 export function isAdmin(user: User | null): boolean {

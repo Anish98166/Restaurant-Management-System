@@ -10,8 +10,44 @@ export interface User {
   email: string;
   name: string;
   role: Role;
+  active: boolean;
+  phone?: string;
+  lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  _count?: { orders: number };
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  user: Pick<User, 'id' | 'name' | 'role'>;
+  action: string;
+  details?: string;
+  createdAt: string;
+}
+
+export interface LoyaltyCustomer {
+  id: string;
+  phone: string;
+  email?: string;
+  name?: string;
+  visitCount: number;
+  totalSpend: number;
+  freeItemEarned: boolean;
+  freeItemUsed: boolean;
+  lastVisitAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { orders: number };
+}
+
+export interface LoyaltySummary {
+  totalCustomers: number;
+  freeItemsPending: number;
+  totalLoyaltyRevenue: number;
+  avgVisits: number;
+  freeItemThreshold: number;
 }
 
 export interface Modifier {
