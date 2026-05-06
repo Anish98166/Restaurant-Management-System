@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { CreditCard, AlertCircle, Lock } from 'lucide-react';
+import { CreditCard, AlertCircle, Lock, Receipt } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { PaymentModal } from '@/components/billing/PaymentModal';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -120,7 +120,7 @@ export default function BillingPage() {
               <table className="w-full text-sm">
                 <thead className="bg-[#F5E6D3]">
                   <tr>
-                    {['Order', 'Table', 'Amount', 'Method', 'Status', 'Date'].map((h) => (
+                    {['Order', 'Table', 'Amount', 'Method', 'Status', 'Date', 'Receipt'].map((h) => (
                       <th key={h} className="px-4 py-3 text-left font-semibold text-[#4E342E]">{h}</th>
                     ))}
                   </tr>
@@ -139,6 +139,16 @@ export default function BillingPage() {
                       </td>
                       <td className="px-4 py-3 text-[#8D6E63]">
                         {format(new Date(payment.createdAt), 'MMM d, HH:mm')}
+                      </td>
+                      <td className="px-4 py-3">
+                        <a
+                          href={`/receipt/${payment.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-[#FF8A65] hover:text-[#FF7043] font-medium transition-colors"
+                        >
+                          <Receipt className="w-3.5 h-3.5" /> View
+                        </a>
                       </td>
                     </tr>
                   ))}

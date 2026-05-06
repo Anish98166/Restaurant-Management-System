@@ -31,6 +31,16 @@ export class PublicCreateOrderDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
+  phone?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  email?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
   notes?: string;
 
   @ApiProperty({ type: [PublicOrderItemDto] })

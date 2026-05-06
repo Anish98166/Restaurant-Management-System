@@ -25,4 +25,10 @@ export class PublicController {
   createOrder(@Body() dto: PublicCreateOrderDto) {
     return this.publicService.createOrder(dto);
   }
+
+  @Get('receipt/:paymentId')
+  @ApiOperation({ summary: 'Get digital receipt by payment ID (no auth)' })
+  getReceipt(@Param('paymentId') paymentId: string) {
+    return this.publicService.getReceipt(paymentId);
+  }
 }

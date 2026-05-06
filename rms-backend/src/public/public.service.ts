@@ -3,10 +3,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PublicCreateOrderDto } from './dto/public-order.dto';
 import { TableStatus, MenuCategory } from '@prisma/client';
 import { InventoryService } from '../inventory/inventory.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
 
 @Injectable()
 export class PublicService {
-  constructor(private prisma: PrismaService, private inventoryService: InventoryService) {}
+  constructor(
+    private prisma: PrismaService,
+    private inventoryService: InventoryService,
+    private loyaltyService: LoyaltyService,
+  ) {}
 
   async getMenu(category?: string) {
     const where: any = { available: true };
@@ -65,6 +70,47 @@ export class PublicService {
     await this.prisma.restaurantTable.update({ where: { id: dto.tableId }, data: { status: TableStatus.OCCUPIED } });
     await this.inventoryService.deductStock(dto.items.map((i) => ({ menuItemId: i.menuItemId, quantity: i.quantity })));
 
+    // Record loyalty visit if phone provided
+    if (dto.phone) {
+      try {
+        const loyalty = await this.loyaltyService.recordVisit(
+          dto.phone,
+          dto.customerName,
+          dto.email,
+          totalAmount,
+        );
+        // Link loyalty customer to order
+        await this.prisma.order.update({
+          where: { id: order.id },
+          data: { loyaltyCustomerId: loyalty.id },
+        });
+      } catch {
+        // Loyalty errors should never block the order
+      }
+    }
+
     return order;
+  }
+
+  async getReceipt(paymentId: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        order: {
+          include: {
+            table: { select: { tableNumber: true } },
+            staff: { select: { name: true } },
+            items: {
+              include: {
+                menuItem: { select: { name: true, category: true } },
+                modifiers: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!payment) throw new NotFoundException('Receipt not found');
+    return payment;
   }
 }

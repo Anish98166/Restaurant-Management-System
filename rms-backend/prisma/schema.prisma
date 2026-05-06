@@ -48,14 +48,42 @@ enum MenuCategory {
 }
 
 model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String
+  password      String
+  role          Role          @default(STAFF)
+  active        Boolean       @default(true)
+  phone         String?
+  lastLoginAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  orders        Order[]
+  activityLogs  ActivityLog[]
+}
+
+model ActivityLog {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      Role     @default(STAFF)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  details   String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+}
+
+model LoyaltyCustomer {
+  id             String    @id @default(cuid())
+  phone          String    @unique
+  email          String?
+  name           String?
+  visitCount     Int       @default(0)
+  totalSpend     Float     @default(0)
+  freeItemEarned Boolean   @default(false)
+  freeItemUsed   Boolean   @default(false)
+  lastVisitAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  orders         Order[]
 }
 
 model MenuItem {
@@ -108,20 +136,22 @@ model RestaurantTable {
 }
 
 model Order {
-  id          String          @id @default(cuid())
-  orderNumber Int             @unique @default(autoincrement())
-  status      OrderStatus     @default(PENDING)
-  notes       String?
-  totalAmount Float           @default(0)
-  tableId     String
-  table       RestaurantTable @relation(fields: [tableId], references: [id])
-  staffId     String
-  staff       User            @relation(fields: [staffId], references: [id])
-  items       OrderItem[]
-  payment     Payment?
-  feedback    Feedback?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id                String           @id @default(cuid())
+  orderNumber       Int              @unique @default(autoincrement())
+  status            OrderStatus      @default(PENDING)
+  notes             String?
+  totalAmount       Float            @default(0)
+  tableId           String
+  table             RestaurantTable  @relation(fields: [tableId], references: [id])
+  staffId           String
+  staff             User             @relation(fields: [staffId], references: [id])
+  loyaltyCustomerId String?
+  loyaltyCustomer   LoyaltyCustomer? @relation(fields: [loyaltyCustomerId], references: [id])
+  items             OrderItem[]
+  payment           Payment?
+  feedback          Feedback?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
 model OrderItem {
