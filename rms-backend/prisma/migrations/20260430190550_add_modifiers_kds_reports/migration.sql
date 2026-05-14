@@ -7,7 +7,6 @@ CREATE TABLE "ModifierGroup" (
     "multiSelect" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "ModifierGroup_pkey" PRIMARY KEY ("id")
 );
 
@@ -19,7 +18,6 @@ CREATE TABLE "Modifier" (
     "priceAdjustment" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "available" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT "Modifier_pkey" PRIMARY KEY ("id")
 );
 
@@ -30,22 +28,7 @@ CREATE TABLE "OrderItemModifier" (
     "modifierId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "priceAdjustment" DOUBLE PRECISION NOT NULL DEFAULT 0,
-
     CONSTRAINT "OrderItemModifier_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "InventoryItem" (
-    "id" TEXT NOT NULL,
-    "menuItemId" TEXT NOT NULL,
-    "quantity" INTEGER NOT NULL DEFAULT 0,
-    "unit" TEXT NOT NULL DEFAULT 'portion',
-    "lowStockThreshold" INTEGER NOT NULL DEFAULT 10,
-    "lastRestockedAt" TIMESTAMP(3),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "InventoryItem_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -63,12 +46,8 @@ CREATE TABLE "DailyReport" (
     "paymentBreakdownJson" TEXT NOT NULL,
     "closedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "closedById" TEXT NOT NULL,
-
     CONSTRAINT "DailyReport_pkey" PRIMARY KEY ("id")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "InventoryItem_menuItemId_key" ON "InventoryItem"("menuItemId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "DailyReport_date_key" ON "DailyReport"("date");
@@ -84,6 +63,3 @@ ALTER TABLE "OrderItemModifier" ADD CONSTRAINT "OrderItemModifier_orderItemId_fk
 
 -- AddForeignKey
 ALTER TABLE "OrderItemModifier" ADD CONSTRAINT "OrderItemModifier_modifierId_fkey" FOREIGN KEY ("modifierId") REFERENCES "Modifier"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "InventoryItem" ADD CONSTRAINT "InventoryItem_menuItemId_fkey" FOREIGN KEY ("menuItemId") REFERENCES "MenuItem"("id") ON DELETE CASCADE ON UPDATE CASCADE;
